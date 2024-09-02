@@ -6,7 +6,16 @@ export interface Panel {
   id: string;
   size: number;
   item?: Item | null;
+  position: {
+    column: number;
+    row: number;
+  };
 }
+
+const COLUMN_ONE_PANELS = [
+  { id: "panel1", size: 50, item: null, position: { column: 1, row: 0 } },
+  { id: "panel2", size: 50, item: null, position: { column: 1, row: 1 } },
+];
 
 interface AppStateContextType {
   panels: Panel[];
@@ -35,10 +44,7 @@ export const useAppState = () => {
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [panels, setPanels] = useState<Panel[]>([
-    { id: "panel1", size: 50, item: null },
-    { id: "panel2", size: 50, item: null },
-  ]);
+  const [panels, setPanels] = useState<Panel[]>(COLUMN_ONE_PANELS);
 
   const [lastPanelId, setLastPanelId] = useState<number>(2);
 
@@ -78,17 +84,28 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   }, []);
 
+  // add panel to column one
   const addPanel = () => {
     const newPanelId = `panel${lastPanelId + 1}`;
     setPanels((prevPanels) => [
       ...prevPanels,
-      { id: newPanelId, size: 50, item: null },
+      {
+        id: newPanelId,
+        size: 50,
+        item: null,
+        position: { column: 1, row: prevPanels.length },
+      },
     ]);
     setLastPanelId(lastPanelId + 1);
   };
 
   const deletePanel = (id: string) => {
-    setPanels((prevPanels) => prevPanels.filter((panel) => panel.id !== id));
+    setPanels((prevPanels) => {
+      let newPanels = prevPanels
+        .filter((panel) => panel.id !== id)
+        .map((p, index) => ({ ...p, position: { column: 1, row: index } }));
+      return newPanels;
+    });
   };
 
   return (
