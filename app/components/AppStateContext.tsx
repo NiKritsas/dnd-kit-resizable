@@ -13,8 +13,18 @@ export interface Panel {
 }
 
 const COLUMN_ONE_PANELS = [
-  { id: "panel1", size: 50, item: null, position: { column: 1, row: 0 } },
-  { id: "panel2", size: 50, item: null, position: { column: 1, row: 1 } },
+  {
+    id: Math.random().toString(16).slice(2),
+    size: 50,
+    item: null,
+    position: { column: 1, row: 0 },
+  },
+  {
+    id: Math.random().toString(16).slice(2),
+    size: 50,
+    item: null,
+    position: { column: 1, row: 1 },
+  },
 ];
 
 interface AppStateContextType {
@@ -42,8 +52,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [panels, setPanels] = useState<Panel[]>(COLUMN_ONE_PANELS);
-
-  const [lastPanelId, setLastPanelId] = useState<number>(2);
 
   const dropItemToPanel = (overId: UniqueIdentifier, item: any) => {
     setPanels((prev) => {
@@ -79,7 +87,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // add panel to column
   const addPanel = (column: number) => {
-    const newPanelId = `panel${lastPanelId + 1}`;
+    const newPanelId = Math.random().toString(16).slice(2);
     setPanels((prevPanels) => [
       ...prevPanels,
       {
@@ -89,7 +97,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         position: { column: column, row: prevPanels.length },
       },
     ]);
-    setLastPanelId(lastPanelId + 1);
   };
 
   // delete panel from column
