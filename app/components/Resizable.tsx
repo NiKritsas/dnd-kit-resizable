@@ -43,13 +43,19 @@ const ITEMS: Item[] = [
 
 export function ResizableDemo() {
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
-  const { panels, dropItemToPanel, addPanel, handleResize, deletePanel } =
-    useAppState();
+  const {
+    panels,
+    dropItemToPanel,
+    removeItemFromPanel,
+    addPanel,
+    handleResize,
+    deletePanel,
+  } = useAppState();
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over) {
-      dropItemToPanel(active.id, over.id, active.data.current);
+      dropItemToPanel(over.id, active.data.current);
     }
   };
 
@@ -61,7 +67,7 @@ export function ResizableDemo() {
     <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
       <div className="flex flex-col space-y-4 p-4">
         <button
-          onClick={addPanel}
+          onClick={() => addPanel(1)}
           className="self-start bg-blue-500 text-white px-4 py-2 rounded"
         >
           Add Panel
@@ -95,7 +101,7 @@ export function ResizableDemo() {
                       {panel.item.title}
                       <span
                         className="font-bold pl-2 cursor-pointer"
-                        onClick={() => {}}
+                        onClick={() => removeItemFromPanel(panel.id)}
                       >
                         x
                       </span>
@@ -108,7 +114,7 @@ export function ResizableDemo() {
                 </DroppableArea>
 
                 <button
-                  onClick={() => deletePanel(panel.id)}
+                  onClick={() => deletePanel(panel.id, 1)}
                   className="absolute top-0 right-0 m-2 bg-red-500 text-white px-2 py-1 rounded text-xs"
                 >
                   <BadgeMinus />

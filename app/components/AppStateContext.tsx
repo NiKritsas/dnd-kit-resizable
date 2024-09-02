@@ -19,14 +19,11 @@ const COLUMN_ONE_PANELS = [
 
 interface AppStateContextType {
   panels: Panel[];
-  dropItemToPanel: (
-    activeId: UniqueIdentifier,
-    overId: UniqueIdentifier,
-    item: any
-  ) => void;
+  dropItemToPanel: (overId: UniqueIdentifier, item: any) => void;
+  removeItemFromPanel: (id: string) => void;
   handleResize: (panelId: string, size: number) => void;
-  addPanel: () => void;
-  deletePanel: (id: string) => void;
+  addPanel: (column: number) => void;
+  deletePanel: (id: string, column: number) => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(
@@ -48,11 +45,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const [lastPanelId, setLastPanelId] = useState<number>(2);
 
-  const dropItemToPanel = (
-    activeId: UniqueIdentifier,
-    overId: UniqueIdentifier,
-    item: any
-  ) => {
+  const dropItemToPanel = (overId: UniqueIdentifier, item: any) => {
     setPanels((prev) => {
       let newPanels: Panel[] = [];
       prev.map((panel) => {
@@ -84,8 +77,8 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   }, []);
 
-  // add panel to column one
-  const addPanel = () => {
+  // add panel to column
+  const addPanel = (column: number) => {
     const newPanelId = `panel${lastPanelId + 1}`;
     setPanels((prevPanels) => [
       ...prevPanels,
@@ -93,19 +86,32 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         id: newPanelId,
         size: 50,
         item: null,
-        position: { column: 1, row: prevPanels.length },
+        position: { column: column, row: prevPanels.length },
       },
     ]);
     setLastPanelId(lastPanelId + 1);
   };
 
-  const deletePanel = (id: string) => {
+  // delete panel from column
+  const deletePanel = (id: string, column: number) => {
     setPanels((prevPanels) => {
       let newPanels = prevPanels
         .filter((panel) => panel.id !== id)
-        .map((p, index) => ({ ...p, position: { column: 1, row: index } }));
+        .map((p, index) => ({
+          ...p,
+          position: { column: column, row: index },
+        }));
       return newPanels;
     });
+  };
+
+  // remove item from panel
+  const removeItemFromPanel = (id: string) => {
+    setPanels((prevPanels) =>
+      prevPanels.map((panel) =>
+        panel.id === id ? { ...panel, item: null } : { ...panel }
+      )
+    );
   };
 
   return (
@@ -113,6 +119,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         panels,
         dropItemToPanel,
+        removeItemFromPanel,
         handleResize,
         addPanel,
         deletePanel,
