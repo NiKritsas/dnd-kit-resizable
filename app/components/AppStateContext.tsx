@@ -5,12 +5,11 @@ import { Item } from "./Resizable";
 export interface Panel {
   id: string;
   size: number;
-  item?: Item;
+  item?: Item | null;
 }
 
 interface AppStateContextType {
-  panels: { id: string; size: number }[];
-  droppedItems: { [key: string]: UniqueIdentifier | null };
+  panels: Panel[];
   dropItemToPanel: (
     activeId: UniqueIdentifier,
     overId: UniqueIdentifier,
@@ -36,13 +35,9 @@ export const useAppState = () => {
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [droppedItems, setDroppedItems] = useState<{
-    [key: string]: UniqueIdentifier | null;
-  }>({});
-
   const [panels, setPanels] = useState<Panel[]>([
-    { id: "panel1", size: 50 },
-    { id: "panel2", size: 50 },
+    { id: "panel1", size: 50, item: null },
+    { id: "panel2", size: 50, item: null },
   ]);
 
   const [lastPanelId, setLastPanelId] = useState<number>(2);
@@ -52,11 +47,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     overId: UniqueIdentifier,
     item: any
   ) => {
-    console.log(item);
-    setDroppedItems((prev) => ({
-      ...prev,
-      [overId]: activeId,
-    }));
     setPanels((prev) => {
       let newPanels: Panel[] = [];
       prev.map((panel) => {
@@ -90,24 +80,21 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const addPanel = () => {
     const newPanelId = `panel${lastPanelId + 1}`;
-    setPanels((prevPanels) => [...prevPanels, { id: newPanelId, size: 50 }]);
+    setPanels((prevPanels) => [
+      ...prevPanels,
+      { id: newPanelId, size: 50, item: null },
+    ]);
     setLastPanelId(lastPanelId + 1);
   };
 
   const deletePanel = (id: string) => {
     setPanels((prevPanels) => prevPanels.filter((panel) => panel.id !== id));
-
-    setDroppedItems((prevDroppedItems) => {
-      const { [id]: _, ...remainingDroppedItems } = prevDroppedItems;
-      return remainingDroppedItems;
-    });
   };
 
   return (
     <AppStateContext.Provider
       value={{
         panels,
-        droppedItems,
         dropItemToPanel,
         handleResize,
         addPanel,

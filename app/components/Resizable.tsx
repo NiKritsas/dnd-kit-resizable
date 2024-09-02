@@ -69,7 +69,11 @@ export function ResizableDemo() {
 
         <div className="space-y-3">
           {ITEMS.map((item) => (
-            <DraggableItem key={item.id} id={`item-${item.id}`} item={item} />
+            <DraggableItem key={item.id} id={`item-${item.id}`} item={item}>
+              <div className="bg-blue-500 text-white p-2 rounded">
+                {item.title}
+              </div>
+            </DraggableItem>
           ))}
         </div>
 
@@ -82,14 +86,25 @@ export function ResizableDemo() {
               key={panel.id}
               id={panel.id}
               order={index}
-              // defaultSize={100 / panels.length}
               onResize={(size) => handleResize(panel.id, size)}
             >
               <div className="relative h-full">
                 <DroppableArea id={panel.id}>
-                  <div className="flex h-full items-center justify-center p-4">
-                    <span className="font-semibold">Panel {index + 1}</span>
-                  </div>
+                  {panel.item ? (
+                    <div className="bg-green-500 text-white p-2 rounded">
+                      {panel.item.title}
+                      <span
+                        className="font-bold pl-2 cursor-pointer"
+                        onClick={() => {}}
+                      >
+                        x
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex h-full items-center justify-center p-4">
+                      <span className="font-semibold">Panel {index + 1}</span>
+                    </div>
+                  )}
                 </DroppableArea>
 
                 <button

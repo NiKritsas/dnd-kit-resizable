@@ -5,9 +5,14 @@ import { Item } from "./Resizable";
 interface DraggableItemProps {
   id: UniqueIdentifier;
   item: Item;
+  children: React.ReactNode;
 }
 
-const DraggableItem: React.FC<DraggableItemProps> = ({ id, item }) => {
+const DraggableItem: React.FC<DraggableItemProps> = ({
+  id,
+  item,
+  children,
+}) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
     data: item,
@@ -23,9 +28,9 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ id, item }) => {
       style={style}
       {...listeners}
       {...attributes}
-      className="bg-blue-500 text-white p-2 rounded cursor-pointer"
+      className="cursor-grab"
     >
-      {item.title}
+      {children}
     </div>
   );
 };

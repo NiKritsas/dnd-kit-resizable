@@ -1,6 +1,5 @@
 import React from "react";
 import { useDroppable, UniqueIdentifier } from "@dnd-kit/core";
-import { useAppState } from "./AppStateContext";
 
 interface DroppableAreaProps {
   id: UniqueIdentifier;
@@ -8,7 +7,6 @@ interface DroppableAreaProps {
 }
 
 const DroppableArea: React.FC<DroppableAreaProps> = ({ id, children }) => {
-  const { droppedItems } = useAppState();
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
@@ -20,13 +18,7 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({ id, children }) => {
         isOver ? "border-green-500" : "border-gray-300"
       } rounded p-4`}
     >
-      {droppedItems[id] ? (
-        <div className="bg-green-500 text-white p-2 rounded">
-          {droppedItems[id]?.toString()}
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </div>
   );
 };
