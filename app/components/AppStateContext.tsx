@@ -1,10 +1,21 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { DragEndEvent, UniqueIdentifier } from "@dnd-kit/core";
+import { UniqueIdentifier } from "@dnd-kit/core";
+import { Item } from "./Resizable";
+
+export interface Panel {
+  id: string;
+  size: number;
+  item?: Item;
+}
 
 interface AppStateContextType {
   panels: { id: string; size: number }[];
   droppedItems: { [key: string]: UniqueIdentifier | null };
-  handleDragEnd: (event: DragEndEvent) => void;
+  dropItemToPanel: (
+    activeId: UniqueIdentifier,
+    overId: UniqueIdentifier,
+    item: any
+  ) => void;
   handleResize: (panelId: string, size: number) => void;
   addPanel: () => void;
   deletePanel: (id: string) => void;
@@ -28,21 +39,36 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const [droppedItems, setDroppedItems] = useState<{
     [key: string]: UniqueIdentifier | null;
   }>({});
-  const [panels, setPanels] = useState<{ id: string; size: number }[]>([
+
+  const [panels, setPanels] = useState<Panel[]>([
     { id: "panel1", size: 50 },
     { id: "panel2", size: 50 },
   ]);
 
   const [lastPanelId, setLastPanelId] = useState<number>(2);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over) {
-      setDroppedItems((prev) => ({
-        ...prev,
-        [over.id]: active.id,
-      }));
-    }
+  const dropItemToPanel = (
+    activeId: UniqueIdentifier,
+    overId: UniqueIdentifier,
+    item: any
+  ) => {
+    console.log(item);
+    setDroppedItems((prev) => ({
+      ...prev,
+      [overId]: activeId,
+    }));
+    setPanels((prev) => {
+      let newPanels: Panel[] = [];
+      prev.map((panel) => {
+        if (panel.id === overId) {
+          panel.item = item;
+        }
+
+        newPanels.push(panel);
+      });
+
+      return newPanels;
+    });
   };
 
   // const handleGetSize = (panelId: string) => {
@@ -54,7 +80,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // };
 
   const handleResize = useCallback((panelId: string, size: number) => {
-    console.log(`Resizing panel ${panelId} to size: ${size}`);
+    // console.log(`Resizing panel ${panelId} to size: ${size}`);
     setPanels((prevPanels) =>
       prevPanels.map((panel) =>
         panel.id === panelId ? { ...panel, size: Math.round(size) } : panel
@@ -82,7 +108,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         panels,
         droppedItems,
-        handleDragEnd,
+        dropItemToPanel,
         handleResize,
         addPanel,
         deletePanel,

@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   DndContext,
   useSensor,
   useSensors,
   MouseSensor,
   TouchSensor,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   ResizableHandle,
@@ -16,10 +17,45 @@ import DroppableArea from "./DroppableArea";
 import { useAppState } from "./AppStateContext";
 import { BadgeMinus } from "lucide-react";
 
+export interface Item {
+  id: string | number;
+  title: string;
+}
+
+const ITEMS: Item[] = [
+  {
+    id: 1,
+    title: "Item 1",
+  },
+  {
+    id: 2,
+    title: "Item 2",
+  },
+  {
+    id: 3,
+    title: "Item 3",
+  },
+  {
+    id: 4,
+    title: "Item 4",
+  },
+];
+
 export function ResizableDemo() {
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
-  const { panels, handleDragEnd, addPanel, handleResize, deletePanel } =
+  const { panels, dropItemToPanel, addPanel, handleResize, deletePanel } =
     useAppState();
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over) {
+      dropItemToPanel(active.id, over.id, active.data.current);
+    }
+  };
+
+  useEffect(() => {
+    if (panels) console.log(panels);
+  }, [panels]);
 
   return (
     <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
@@ -32,10 +68,9 @@ export function ResizableDemo() {
         </button>
 
         <div className="space-y-3">
-          <DraggableItem id="item-1" label="Draggable 1" />
-          <DraggableItem id="item-2" label="Draggable 2" />
-          <DraggableItem id="item-3" label="Draggable 3" />
-          <DraggableItem id="item-4" label="Draggable 4" />
+          {ITEMS.map((item) => (
+            <DraggableItem key={item.id} id={`item-${item.id}`} item={item} />
+          ))}
         </div>
 
         <ResizablePanelGroup
@@ -45,7 +80,9 @@ export function ResizableDemo() {
           {panels.map((panel, index) => (
             <ResizablePanel
               key={panel.id}
-              defaultSize={100 / panels.length}
+              id={panel.id}
+              order={index}
+              // defaultSize={100 / panels.length}
               onResize={(size) => handleResize(panel.id, size)}
             >
               <div className="relative h-full">
