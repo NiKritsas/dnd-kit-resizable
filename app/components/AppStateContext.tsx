@@ -7,51 +7,32 @@ import React, {
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { Item } from "./Resizable";
 
+// Utility to create a new empty panel with a unique id
+const createEmptyPanel = (id: string): Panel => ({
+  id: id,
+  size: 50,
+  item: null,
+});
+
 // Panel interface
 export interface Panel {
   id: string;
   size: number;
   item?: Item | null;
-  position: {
-    column: number;
-    row: number;
-  };
 }
 
 // Initial state
 const initialPanelsState: Panel[][] = [
-  [
-    {
-      id: Math.random().toString(16).slice(2),
-      size: 50,
-      item: null,
-      position: { column: 1, row: 0 },
-    },
-    {
-      id: Math.random().toString(16).slice(2),
-      size: 50,
-      item: null,
-      position: { column: 1, row: 1 },
-    },
-  ],
-  [
-    {
-      id: Math.random().toString(16).slice(2),
-      size: 50,
-      item: null,
-      position: { column: 2, row: 0 },
-    },
-  ],
+  [createEmptyPanel("1"), createEmptyPanel("2")],
+  [createEmptyPanel("3"), createEmptyPanel("4"), createEmptyPanel("5")],
 ];
 
 // action types
 type PanelAction =
   | { type: "DROP_ITEM"; overId: UniqueIdentifier; item: any }
   | { type: "RESIZE_PANEL"; panelId: string; size: number }
-  | { type: "ADD_PANEL_TO_FIRST_ARRAY"; column: number }
-  | { type: "ADD_PANEL_TO_SECOND_ARRAY"; column: number }
-  | { type: "DELETE_PANEL_FROM_FIRST_ARRAY"; id: string; column: number }
-  | { type: "DELETE_PANEL_FROM_SECOND_ARRAY"; id: string; column: number }
+  | { type: "ADD_PANEL"; column: number; id: string }
+  | { type: "DELETE_PANEL"; id: string; column: number }
   | { type: "REMOVE_ITEM"; id: string };
 
 // Reducer function
@@ -78,52 +59,18 @@ const panelsReducer = (state: Panel[][], action: PanelAction): Panel[][] => {
             : panel
         )
       );
-    case "ADD_PANEL_TO_FIRST_ARRAY":
-      return [
-        [
-          ...state[0],
-          {
-            id: Math.random().toString(16).slice(2),
-            size: 50,
-            item: null,
-            position: { column: action.column, row: state[0].length },
-          },
-        ],
-        state[1],
-      ];
-    case "ADD_PANEL_TO_SECOND_ARRAY":
-      return [
-        state[0],
-        [
-          ...state[1],
-          {
-            id: Math.random().toString(16).slice(2),
-            size: 50,
-            item: null,
-            position: { column: action.column, row: state[1].length },
-          },
-        ],
-      ];
-    case "DELETE_PANEL_FROM_FIRST_ARRAY":
-      return [
-        state[0]
-          .filter((panel) => panel.id !== action.id)
-          .map((panel, index) => ({
-            ...panel,
-            position: { column: action.column, row: index },
-          })),
-        state[1],
-      ];
-    case "DELETE_PANEL_FROM_SECOND_ARRAY":
-      return [
-        state[0],
-        state[1]
-          .filter((panel) => panel.id !== action.id)
-          .map((panel, index) => ({
-            ...panel,
-            position: { column: action.column, row: index },
-          })),
-      ];
+    case "ADD_PANEL":
+      return state.map((column, index) =>
+        index === action.column
+          ? [...column, createEmptyPanel(action.id)]
+          : column
+      );
+    case "DELETE_PANEL":
+      return state.map((column, index) =>
+        index === action.column
+          ? column.filter((panel) => panel.id !== action.id)
+          : column
+      );
     case "REMOVE_ITEM":
       return state.map((column) =>
         column.map((panel) =>
@@ -141,10 +88,8 @@ interface AppStateContextType {
   dropItemToPanel: (overId: UniqueIdentifier, item: any) => void;
   removeItemFromPanel: (id: string) => void;
   handleResize: (panelId: string, size: number) => void;
-  addPanelToFirstArray: (column: number) => void;
-  addPanelToSecondArray: (column: number) => void;
-  deletePanelFromFirstArray: (id: string, column: number) => void;
-  deletePanelFromSecondArray: (id: string, column: number) => void;
+  addPanel: (column: number, id: string) => void;
+  deletePanel: (id: string, column: number) => void;
 }
 
 // Create the context
@@ -175,20 +120,12 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "RESIZE_PANEL", panelId, size });
   }, []);
 
-  const addPanelToFirstArray = (column: number) => {
-    dispatch({ type: "ADD_PANEL_TO_FIRST_ARRAY", column });
+  const addPanel = (column: number, id: string) => {
+    dispatch({ type: "ADD_PANEL", column, id });
   };
 
-  const addPanelToSecondArray = (column: number) => {
-    dispatch({ type: "ADD_PANEL_TO_SECOND_ARRAY", column });
-  };
-
-  const deletePanelFromFirstArray = (id: string, column: number) => {
-    dispatch({ type: "DELETE_PANEL_FROM_FIRST_ARRAY", id, column });
-  };
-
-  const deletePanelFromSecondArray = (id: string, column: number) => {
-    dispatch({ type: "DELETE_PANEL_FROM_SECOND_ARRAY", id, column });
+  const deletePanel = (id: string, column: number) => {
+    dispatch({ type: "DELETE_PANEL", id, column });
   };
 
   const removeItemFromPanel = (id: string) => {
@@ -202,10 +139,8 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         dropItemToPanel,
         removeItemFromPanel,
         handleResize,
-        addPanelToFirstArray,
-        addPanelToSecondArray,
-        deletePanelFromFirstArray,
-        deletePanelFromSecondArray,
+        addPanel,
+        deletePanel,
       }}
     >
       {children}

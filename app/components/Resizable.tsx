@@ -16,7 +16,7 @@ import DraggableItem from "./DraggableItem";
 import DroppableArea from "./DroppableArea";
 import { useAppState } from "./AppStateContext";
 import { BadgeMinus, PlusIcon } from "lucide-react";
-import { Canvas } from "./Canvas";
+import { Canvas } from "./canvas/Canvas";
 
 export interface Item {
   id: string | number;
@@ -63,7 +63,27 @@ export function ResizableDemo() {
           </div>
         </div>
 
-        <Canvas />
+        <div className="flex flex-wrap gap-4 border p-4 rounded-md bg-slate-100">
+          <Canvas />
+        </div>
+
+        <div className="flex gap-2 items-center text-sm">
+          <div>Position 00:</div>
+          <div className="p-1 bg-slate-100">
+            {panels[0][0]?.item
+              ? `${panels[0][0].item.title} with size ${panels[0][0].size}%`
+              : "empty"}
+          </div>
+        </div>
+
+        <div className="flex gap-2 items-center text-sm">
+          <div>Position 10:</div>
+          <div className="p-1 bg-slate-100">
+            {panels[1][0]?.item
+              ? `${panels[1][0].item.title} with size ${panels[1][0].size}%`
+              : "empty"}
+          </div>
+        </div>
       </div>
     </DndContext>
   );
