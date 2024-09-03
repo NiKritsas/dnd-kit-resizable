@@ -16,7 +16,7 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({ id, children }) => {
         isOver ? "bg-green-100" : "bg-white"
       } border border-dashed ${
         isOver ? "border-green-500" : "border-gray-300"
-      } rounded p-4`}
+      } p-4`}
     >
       {children}
     </div>

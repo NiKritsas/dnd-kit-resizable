@@ -58,13 +58,13 @@ type PanelAction =
 const panelsReducer = (state: Panel[][], action: PanelAction): Panel[][] => {
   switch (action.type) {
     case "DROP_ITEM":
-      // const itemAlreadyDropped = state.some((column) =>
-      //   column.some((panel) => panel.item && panel.item.id === action.item.id)
-      // );
+      const itemAlreadyDropped = state.some((column) =>
+        column.some((panel) => panel.item && panel.item.id === action.item.id)
+      );
 
-      // if (itemAlreadyDropped) {
-      //   return state;
-      // }
+      if (itemAlreadyDropped) {
+        return state;
+      }
       return state.map((column) =>
         column.map((panel) =>
           panel.id === action.overId ? { ...panel, item: action.item } : panel

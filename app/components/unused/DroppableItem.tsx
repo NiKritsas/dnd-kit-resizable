@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useDraggable, useDndMonitor, DragEndEvent } from "@dnd-kit/core";
 
 interface DroppableItemProps {
