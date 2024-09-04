@@ -3,22 +3,13 @@ import {
   DndContext,
   useSensor,
   useSensors,
-  MouseSensor,
-  TouchSensor,
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
 } from "@dnd-kit/core";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
 import DraggableItem from "./DraggableItem";
-import DroppableArea from "./DroppableArea";
-import { Panel, useAppState } from "./AppStateContext";
-import { BadgeMinus, PlusIcon } from "lucide-react";
+import { useAppState } from "./AppStateContext";
 import { Canvas } from "./canvas/Canvas";
 import { cn } from "../../lib/utils";
 import { arraySwap } from "@dnd-kit/sortable";
@@ -54,28 +45,28 @@ export function ResizableDemo() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    // flat 2D array to use dnd-kit/sortable arraySwap method
+    const items = panels.flatMap((column) => column.map((panel) => panel));
+    // if the active item originated from a panel find the panel index
+    const activePanelIndex = items.findIndex((x) => x.item?.id === active.id);
 
     if (over) {
-      if (active.id.toString().includes("pool-item")) {
-        dropItemToPanel(over.id, active.data.current);
+      console.log(over.id);
+      // find over panel index
+      const overPopulatedPanelIndx = items.findIndex(
+        (x) => x.item?.id === over.id
+      );
+      const overEmptyPanelIndx = items.findIndex((x) => x.id === over.id);
+      const overPanelIndex =
+        overPopulatedPanelIndx !== -1
+          ? overPopulatedPanelIndx
+          : overEmptyPanelIndx;
+
+      if (activePanelIndex !== -1) {
+        const swappedArray = arraySwap(items, activePanelIndex, overPanelIndex);
+        swapItemsInPanel(swappedArray);
       } else {
-        const items = panels.flatMap((column) => column.map((panel) => panel));
-
-        const activeIndx = items.findIndex((x) => x.item?.id === active.id);
-        const overIndx = items.findIndex((x) => x.item?.id === over.id);
-        const overEmptyPanel = items.findIndex((x) => x.id === over.id);
-
-        if (activeIndx !== -1 && overIndx !== -1) {
-          const swappedArray = arraySwap(items, activeIndx, overIndx);
-
-          swapItemsInPanel(swappedArray);
-        } else if (activeIndx !== -1 && overEmptyPanel !== -1) {
-          const swappedArray = arraySwap(items, overEmptyPanel, activeIndx);
-
-          swapItemsInPanel(swappedArray);
-        } else {
-          return;
-        }
+        dropItemToPanel(over.id, active.data.current);
       }
     }
   };
@@ -83,10 +74,6 @@ export function ResizableDemo() {
   useEffect(() => {
     if (panels) console.log(panels);
   }, [panels]);
-
-  useEffect(() => {
-    if (activeItem) console.log(activeItem.id);
-  }, [activeItem]);
 
   return (
     <DndContext
