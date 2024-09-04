@@ -28,7 +28,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({
       style={style}
       {...listeners}
       {...attributes}
-      className="cursor-grab z-10"
+      className="cursor-grab z-50"
     >
       {children}
     </div>

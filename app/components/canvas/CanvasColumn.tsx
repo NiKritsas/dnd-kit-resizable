@@ -7,6 +7,9 @@ import {
 import { Panel, useAppState } from "../AppStateContext";
 import DroppableArea from "../DroppableArea";
 import { BadgeMinus, PlusIcon } from "lucide-react";
+import DraggableItem from "../DraggableItem";
+import SortableItem from "../SortableItem";
+import { rectSwappingStrategy, SortableContext } from "@dnd-kit/sortable";
 
 interface CanvasColumnProps {
   column: number;
@@ -37,20 +40,23 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
             key={panel.id}
             id={panel.id}
             order={index}
+            defaultSize={100 / panels.length}
             onResize={(size) => handleResize(panel.id, size)}
           >
             <div className="relative h-full">
               <DroppableArea id={panel.id}>
                 {panel.item ? (
-                  <div className="bg-slate-300 text-slate-500 p-2 rounded h-full w-full flex items-center justify-center">
-                    {panel.item.title}
-                    <span
-                      className="font-bold pl-2 cursor-pointer"
-                      onClick={() => onRemoveItem(panel.id)}
-                    >
-                      x
-                    </span>
-                  </div>
+                  <SortableItem id={panel.item.id} item={panel.item}>
+                    <div className="bg-slate-300 text-slate-500 p-2 rounded h-full w-full flex items-center justify-center z-20">
+                      {panel.item.title}
+                      <button
+                        className="font-bold pl-2 cursor-pointer"
+                        onClickCapture={() => onRemoveItem(panel.id)}
+                      >
+                        x
+                      </button>
+                    </div>
+                  </SortableItem>
                 ) : (
                   <div className="flex h-full items-center justify-center p-4">
                     <span className="font-semibold">

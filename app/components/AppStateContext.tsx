@@ -14,6 +14,23 @@ const createEmptyPanel = (id: string): Panel => ({
   item: null,
 });
 
+const unflattenArray = (
+  flatArray: Panel[],
+  columnOneLength: number,
+  columnTwoLength: number
+) => {
+  let columnOne: Panel[] = [];
+  let columnTwo: Panel[] = [];
+
+  flatArray.map((item, index) =>
+    index < columnOneLength
+      ? columnOne.push({ ...item, size: Math.round(100 / columnOneLength) })
+      : columnTwo.push({ ...item, size: Math.round(100 / columnTwoLength) })
+  );
+
+  return [columnOne, columnTwo];
+};
+
 // Panel interface
 export interface Panel {
   id: string;
@@ -23,13 +40,21 @@ export interface Panel {
 
 // Initial state
 const initialPanelsState: Panel[][] = [
-  [createEmptyPanel("1"), createEmptyPanel("2")],
-  [createEmptyPanel("3"), createEmptyPanel("4"), createEmptyPanel("5")],
+  [createEmptyPanel("panel-1"), createEmptyPanel("panel-2")],
+  [
+    createEmptyPanel("panel-3"),
+    createEmptyPanel("panel-4"),
+    createEmptyPanel("panel-5"),
+  ],
 ];
 
 // action types
 type PanelAction =
   | { type: "DROP_ITEM"; overId: UniqueIdentifier; item: any }
+  | {
+      type: "SWAP_ITEMS";
+      flatArray: Panel[];
+    }
   | { type: "RESIZE_PANEL"; panelId: string; size: number }
   | { type: "ADD_PANEL"; column: number; id: string }
   | { type: "DELETE_PANEL"; id: string; column: number }
@@ -51,6 +76,14 @@ const panelsReducer = (state: Panel[][], action: PanelAction): Panel[][] => {
           panel.id === action.overId ? { ...panel, item: action.item } : panel
         )
       );
+    case "SWAP_ITEMS":
+      const newState = unflattenArray(
+        action.flatArray,
+        state[0].length,
+        state[1].length
+      );
+      return newState;
+
     case "RESIZE_PANEL":
       return state.map((column) =>
         column.map((panel) =>
@@ -62,7 +95,7 @@ const panelsReducer = (state: Panel[][], action: PanelAction): Panel[][] => {
     case "ADD_PANEL":
       return state.map((column, index) =>
         index === action.column
-          ? [...column, createEmptyPanel(action.id)]
+          ? [...column, createEmptyPanel(`panel-${action.id}`)]
           : column
       );
     case "DELETE_PANEL":
@@ -86,6 +119,7 @@ const panelsReducer = (state: Panel[][], action: PanelAction): Panel[][] => {
 interface AppStateContextType {
   panels: Panel[][];
   dropItemToPanel: (overId: UniqueIdentifier, item: any) => void;
+  swapItemsInPanel: (flatArray: Panel[]) => void;
   removeItemFromPanel: (id: string) => void;
   handleResize: (panelId: string, size: number) => void;
   addPanel: (column: number, id: string) => void;
@@ -116,6 +150,10 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "DROP_ITEM", overId, item });
   };
 
+  const swapItemsInPanel = (flatArray: Panel[]) => {
+    dispatch({ type: "SWAP_ITEMS", flatArray });
+  };
+
   const handleResize = useCallback((panelId: string, size: number) => {
     dispatch({ type: "RESIZE_PANEL", panelId, size });
   }, []);
@@ -137,6 +175,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         panels,
         dropItemToPanel,
+        swapItemsInPanel,
         removeItemFromPanel,
         handleResize,
         addPanel,
