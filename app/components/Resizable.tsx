@@ -54,7 +54,7 @@ export function ResizableDemo() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    console.log(active.id);
+
     if (over) {
       if (active.id.toString().includes("pool-item")) {
         dropItemToPanel(over.id, active.data.current);
@@ -63,10 +63,19 @@ export function ResizableDemo() {
 
         const activeIndx = items.findIndex((x) => x.item?.id === active.id);
         const overIndx = items.findIndex((x) => x.item?.id === over.id);
+        const overEmptyPanel = items.findIndex((x) => x.id === over.id);
 
-        const flatArray = arraySwap(items, activeIndx, overIndx);
+        if (activeIndx !== -1 && overIndx !== -1) {
+          const swappedArray = arraySwap(items, activeIndx, overIndx);
 
-        swapItemsInPanel(flatArray);
+          swapItemsInPanel(swappedArray);
+        } else if (activeIndx !== -1 && overEmptyPanel !== -1) {
+          const swappedArray = arraySwap(items, overEmptyPanel, activeIndx);
+
+          swapItemsInPanel(swappedArray);
+        } else {
+          return;
+        }
       }
     }
   };
