@@ -15,7 +15,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({
 }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
-    data: item,
+    data: { item },
   });
 
   const style = {

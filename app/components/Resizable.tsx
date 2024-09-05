@@ -44,7 +44,7 @@ export function ResizableDemo() {
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const itemData = active.data.current as Item;
+    const itemData = active.data.current?.item as Item;
     const activeId = active.id;
 
     setActiveItem({ ...itemData, id: activeId });
@@ -52,7 +52,8 @@ export function ResizableDemo() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    console.log(`activeId: ${active.id}`);
+
+    const itemData = active.data.current?.item as Item;
 
     const activeCanvasIndx: number | null = active.id
       .toString()
@@ -92,7 +93,8 @@ export function ResizableDemo() {
         );
         swapItemsInPanel(overCanvasIndx, swappedArray);
       } else {
-        dropItemToPanel(overCanvasIndx, over.id, active.data.current);
+        console.log(itemData);
+        dropItemToPanel(overCanvasIndx, over.id, itemData);
       }
       console.log(panels);
       // console.log(canvasIndx);
@@ -111,6 +113,8 @@ export function ResizableDemo() {
   // useEffect(() => {
   //   if (panels) console.log(panels);
   // }, [panels]);
+
+  console.log(activeItem);
 
   return (
     <DndContext

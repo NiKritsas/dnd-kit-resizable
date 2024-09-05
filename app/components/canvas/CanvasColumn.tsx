@@ -50,6 +50,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
                 {panel.item ? (
                   <SortableItem
                     id={`${canvasIndex}_${panel.id}_${panel.item.id}`}
+                    canvasIndex={canvasIndex}
                     item={panel.item}
                   >
                     <div className="bg-slate-300 text-slate-500 p-2 rounded h-full w-full flex items-center justify-center z-20">

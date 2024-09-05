@@ -7,10 +7,16 @@ import { useSortable } from "@dnd-kit/sortable";
 interface SortableItemProps {
   id: UniqueIdentifier;
   item: Item;
+  canvasIndex: number;
   children: React.ReactNode;
 }
 
-const SortableItem: React.FC<SortableItemProps> = ({ id, item, children }) => {
+const SortableItem: React.FC<SortableItemProps> = ({
+  id,
+  item,
+  canvasIndex,
+  children,
+}) => {
   const {
     attributes,
     listeners,
@@ -20,7 +26,7 @@ const SortableItem: React.FC<SortableItemProps> = ({ id, item, children }) => {
     isDragging,
   } = useSortable({
     id,
-    data: item,
+    data: { item, canvasIndex },
   });
 
   const style = {
@@ -36,7 +42,7 @@ const SortableItem: React.FC<SortableItemProps> = ({ id, item, children }) => {
       style={style}
       {...listeners}
       {...attributes}
-      className="cursor-grab"
+      className="cursor-grab z-50"
     >
       {children}
     </div>
