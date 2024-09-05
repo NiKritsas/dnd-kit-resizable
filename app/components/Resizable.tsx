@@ -40,7 +40,8 @@ export function ResizableDemo() {
       activationConstraint: { distance: 2 },
     })
   );
-  const { state, dropItemToPanel, swapItemsInPanel } = useAppState();
+  const { state, dropItemToPanel, swapItemsInPanel, removeItemFromPanel } =
+    useAppState();
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -85,7 +86,7 @@ export function ResizableDemo() {
 
       if (activeCanvasIndx !== undefined) {
         // Swap items in the same canvas (sortable context)
-        if (overPopulatedPanelIndx !== -1 || overEmptyPanelIndx !== -1) {
+        if (activeCanvasIndx === overCanvasIndx) {
           console.log("Swapped items in canvas");
           const swappedArray = arraySwap(
             panels,
@@ -93,11 +94,20 @@ export function ResizableDemo() {
             overPanelIndex
           );
           swapItemsInPanel(overCanvasIndx, swappedArray);
+        } else {
+          console.log("Moved to different canvas");
+          console.log(active);
+          dropItemToPanel(overCanvasIndx, over.id, activeItem);
+          removeItemFromPanel(
+            overCanvasIndx,
+            active.id.toString().split("_")[0]
+          );
         }
         // Drop panel item to empty panel on a different canvas (item must be substructed from the origin canvas??)
         // Swap items from different canvases (not sortable context)
       } else {
         console.log("Dropped pool item on empty panel");
+        console.log(over.id, activeItem);
         dropItemToPanel(overCanvasIndx, over.id, activeItem);
       }
     } else {

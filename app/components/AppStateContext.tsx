@@ -90,6 +90,7 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
   const copy = [...state];
   switch (action.type) {
     case "DROP_ITEM":
+      const id = action.overId.toString().split("_")[0];
       const itemAlreadyDropped = state[action.canvasIndx].panels.some(
         (column) =>
           column.some((panel) => panel.item && panel.item.id === action.item.id)
@@ -103,7 +104,7 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
         ...copy[action.canvasIndx],
         panels: copy[action.canvasIndx].panels.map((column) =>
           column.map((panel) =>
-            panel.id === action.overId ? { ...panel, item: action.item } : panel
+            panel.id === id ? { ...panel, item: action.item } : panel
           )
         ),
       };
