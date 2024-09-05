@@ -77,7 +77,9 @@ type PanelAction =
   | { type: "ADD_PANEL"; canvasIndx: number; column: number; id: string }
   | { type: "DELETE_PANEL"; canvasIndx: number; id: string; column: number }
   | { type: "REMOVE_ITEM"; canvasIndx: number; id: string }
-  | { type: "ADD_CANVAS"; newCanvas: Canvas };
+  | { type: "ADD_CANVAS"; newCanvas: Canvas }
+  | { type: "DELETE_CANVAS"; canvasIndx: number }
+  | { type: "RESET_CANVAS"; canvasIndx: number };
 
 // Reducer function
 const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
@@ -167,6 +169,21 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
     case "ADD_CANVAS":
       return [...state, action.newCanvas];
 
+    case "DELETE_CANVAS":
+      return state.filter((_, index) => index !== action.canvasIndx);
+
+    case "RESET_CANVAS":
+      copy[action.canvasIndx] = {
+        ...copy[action.canvasIndx],
+        panels: copy[action.canvasIndx].panels.map((column) =>
+          column.map((panel) => ({
+            ...panel,
+            item: null,
+          }))
+        ),
+      };
+      return copy;
+
     default:
       return state;
   }
@@ -185,7 +202,9 @@ interface AppStateContextType {
   handleResize: (canvasIndx: number, panelId: string, size: number) => void;
   addPanel: (canvasIndx: number, column: number, id: string) => void;
   deletePanel: (canvasIndx: number, id: string, column: number) => void;
-  addCanvas: () => void; // Add function to add a canvas
+  addCanvas: () => void;
+  deleteCanvas: (canvasIndx: number) => void;
+  resetCanvas: (canvasIndx: number) => void; // Expose resetCanvas function
 }
 
 // Create the context
@@ -241,6 +260,14 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "ADD_CANVAS", newCanvas });
   };
 
+  const deleteCanvas = (canvasIndx: number) => {
+    dispatch({ type: "DELETE_CANVAS", canvasIndx });
+  };
+
+  const resetCanvas = (canvasIndx: number) => {
+    dispatch({ type: "RESET_CANVAS", canvasIndx });
+  };
+
   return (
     <AppStateContext.Provider
       value={{
@@ -252,6 +279,8 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         addPanel,
         deletePanel,
         addCanvas,
+        deleteCanvas,
+        resetCanvas,
       }}
     >
       {children}

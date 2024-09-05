@@ -6,7 +6,6 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-  PointerSensor,
   MouseSensor,
   TouchSensor,
   DragOverEvent,
@@ -99,14 +98,14 @@ export function ResizableDemo() {
         );
         swapItemsInPanel(overCanvasIndx, swappedArray);
       } else {
-        // Different canvas, move the item to the new canvas and remove from the old one
+        // Different canvas
         console.log("Moved item to a different canvas");
 
         // Drop the item into the new panel in the target canvas
         dropItemToPanel(overCanvasIndx, over.id, activeItem);
 
-        // Remove the item from the original canvas panel
-        removeItemFromPanel(activeCanvasIndx, active.id.toString());
+        // Remove the item from the original canvas panel(not needed)
+        // removeItemFromPanel(activeCanvasIndx, active.id.toString());
       }
     } else {
       // If the item is coming from a pool (not from any specific panel) and being dropped on a new canvas
