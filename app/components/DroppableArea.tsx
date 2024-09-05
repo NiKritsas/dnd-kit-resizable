@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDroppable, UniqueIdentifier } from "@dnd-kit/core";
 
 interface DroppableAreaProps {
@@ -12,18 +12,23 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({
   canvasIndex,
   children,
 }) => {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef, isOver, over } = useDroppable({
     id,
     data: { canvasIndex },
   });
+  // custom isOver check that combines the canvasIndex and the droppable area id
+  const isOverDroppableNode =
+    (over?.data.current?.canvasIndex === canvasIndex &&
+      over?.id.toString().split("_")[0] === id) ||
+    isOver;
 
   return (
     <div
       ref={setNodeRef}
       className={`w-full h-full flex items-center justify-center ${
-        isOver ? "bg-green-100" : "bg-white"
+        isOverDroppableNode ? "bg-green-100" : "bg-white"
       } border border-dashed ${
-        isOver ? "border-green-500" : "border-gray-300"
+        isOverDroppableNode ? "border-green-500" : "border-gray-300"
       } p-4`}
     >
       {children}

@@ -45,7 +45,9 @@ export function ResizableDemo() {
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const itemData = active.data.current?.item as Item;
-    const activeId = active.id;
+    const activeId = active.data.current
+      ? active.data.current.item.id
+      : active.id;
 
     setActiveItem({ ...itemData, id: activeId });
   };
@@ -53,19 +55,9 @@ export function ResizableDemo() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    const itemData = active.data.current?.item as Item;
-
-    const activeCanvasIndx: number | null = active.id
-      .toString()
-      .includes("pool-item")
-      ? null
-      : Number(active.id.toString().split("_")[0]);
-
     if (over) {
       const overCanvasIndx = over.data.current?.canvasIndex as number;
-
-      console.log(`overCanvasIndx: ${overCanvasIndx}`);
-      console.log(`activeCanvasIndx: ${activeCanvasIndx}`);
+      const activeCanvasIndx = active.data.current?.canvasIndex as number;
 
       // flat 2D array to use dnd-kit/sortable arraySwap method
       const panels = state[overCanvasIndx].panels.flatMap((column) =>
@@ -73,11 +65,11 @@ export function ResizableDemo() {
       );
       // if the active item originated from a panel find the panel index
       const activePanelIndex = panels.findIndex(
-        (x) => `${overCanvasIndx}_${x.id}_${x.item?.id}` === active.id
+        (x) => `${x.id}_${x.item?.id}` === active.id
       );
       // find over panel index
       const overPopulatedPanelIndx = panels.findIndex(
-        (x) => `${overCanvasIndx}_${x.item?.id}` === over.id
+        (x) => `${x.id}_${x.item?.id}` === over.id
       );
       const overEmptyPanelIndx = panels.findIndex((x) => x.id === over.id);
       const overPanelIndex =
@@ -85,21 +77,29 @@ export function ResizableDemo() {
           ? overPopulatedPanelIndx
           : overEmptyPanelIndx;
 
-      if (activePanelIndex !== -1) {
-        const swappedArray = arraySwap(
-          panels,
-          activePanelIndex,
-          overPanelIndex
-        );
-        swapItemsInPanel(overCanvasIndx, swappedArray);
+      // console.log(`overCanvasIndex: ${overCanvasIndx}`);
+      // console.log(`activeCanvasIndex: ${activeCanvasIndx}`);
+      // console.log(`activePanelIndex: ${activePanelIndex}`);
+      // console.log(`overPopulatedPanelIndex: ${overPopulatedPanelIndx}`);
+      // console.log(`overEmptyPanelIndex: ${overEmptyPanelIndx}`);
+
+      if (activeCanvasIndx !== undefined) {
+        // Swap items in the same canvas (sortable context)
+        if (overPopulatedPanelIndx !== -1 || overEmptyPanelIndx !== -1) {
+          console.log("Swapped items in canvas");
+          const swappedArray = arraySwap(
+            panels,
+            activePanelIndex,
+            overPanelIndex
+          );
+          swapItemsInPanel(overCanvasIndx, swappedArray);
+        }
+        // Drop panel item to empty panel on a different canvas (item must be substructed from the origin canvas??)
+        // Swap items from different canvases (not sortable context)
       } else {
-        console.log(itemData);
-        dropItemToPanel(overCanvasIndx, over.id, itemData);
+        console.log("Dropped pool item on empty panel");
+        dropItemToPanel(overCanvasIndx, over.id, activeItem);
       }
-      console.log(panels);
-      // console.log(canvasIndx);
-      console.log(`active: ${activePanelIndex}`);
-      // console.log(`over: ${overPanelIndex}`);
     } else {
       setActiveItem(null);
     }
@@ -113,8 +113,6 @@ export function ResizableDemo() {
   // useEffect(() => {
   //   if (panels) console.log(panels);
   // }, [panels]);
-
-  console.log(activeItem);
 
   return (
     <DndContext

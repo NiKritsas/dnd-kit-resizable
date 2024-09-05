@@ -49,7 +49,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
               <DroppableArea id={panel.id} canvasIndex={canvasIndex}>
                 {panel.item ? (
                   <SortableItem
-                    id={`${canvasIndex}_${panel.id}_${panel.item.id}`}
+                    id={`${panel.id}_${panel.item.id}`}
                     canvasIndex={canvasIndex}
                     item={panel.item}
                   >
