@@ -101,10 +101,7 @@ export function ResizableDemo() {
         dropItemToPanel(overCanvasIndx, over.id, activeItem);
 
         // Remove the item from the original canvas panel
-        removeItemFromPanel(
-          activeCanvasIndx,
-          active.id.toString().split("_")[0]
-        );
+        removeItemFromPanel(activeCanvasIndx, active.id.toString());
       }
     } else {
       // If the item is coming from a pool (not from any specific panel) and being dropped on a new canvas

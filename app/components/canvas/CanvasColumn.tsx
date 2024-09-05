@@ -44,6 +44,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
             order={index}
             defaultSize={100 / panels.length}
             onResize={(size) => handleResize(canvasIndex, panel.id, size)}
+            className="p-0.5"
           >
             <div className="relative h-full">
               <DroppableArea id={panel.id} canvasIndex={canvasIndex}>
@@ -53,7 +54,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
                     canvasIndex={canvasIndex}
                     item={panel.item}
                   >
-                    <div className="bg-slate-300 text-slate-500 p-2 rounded h-full w-full flex items-center justify-center z-20">
+                    <div className="bg-slate-300 text-slate-500 rounded h-full w-full flex items-center justify-center z-20">
                       {panel.item.title}
                       <button
                         className="font-bold pl-2 cursor-pointer"

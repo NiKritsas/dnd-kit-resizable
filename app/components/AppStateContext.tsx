@@ -1,9 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { Item } from "./Resizable";
 
@@ -159,11 +154,12 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
       return copy;
 
     case "REMOVE_ITEM":
+      const activeId = action.id.split("_")[0];
       copy[action.canvasIndx] = {
         ...copy[action.canvasIndx],
         panels: copy[action.canvasIndx].panels.map((column) =>
           column.map((panel) =>
-            panel.id === action.id ? { ...panel, item: null } : panel
+            panel.id === activeId ? { ...panel, item: null } : panel
           )
         ),
       };

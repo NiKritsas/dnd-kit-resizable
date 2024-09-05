@@ -29,7 +29,7 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({
         isOverDroppableNode ? "bg-green-100" : "bg-white"
       } border border-dashed ${
         isOverDroppableNode ? "border-green-500" : "border-gray-300"
-      } p-4`}
+      } p-1`}
     >
       {children}
     </div>

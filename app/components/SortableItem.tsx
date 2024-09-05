@@ -42,7 +42,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
       style={style}
       {...listeners}
       {...attributes}
-      className="cursor-grab z-50"
+      className="cursor-grab z-50 h-full w-full"
     >
       {children}
     </div>
