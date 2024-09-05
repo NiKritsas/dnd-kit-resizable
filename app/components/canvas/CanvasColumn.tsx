@@ -12,14 +12,16 @@ import SortableItem from "../SortableItem";
 import { rectSwappingStrategy, SortableContext } from "@dnd-kit/sortable";
 
 interface CanvasColumnProps {
+  canvasIndex: number;
   column: number;
   panels: Panel[];
-  onAddPanel: (column: number, id: string) => void;
-  onDeletePanel: (id: string, column: number) => void;
-  onRemoveItem: (id: string) => void;
+  onAddPanel: (canvasIndx: number, column: number, id: string) => void;
+  onDeletePanel: (canvasIndx: number, id: string, column: number) => void;
+  onRemoveItem: (canvasIndx: number, id: string) => void;
 }
 
 const CanvasColumn: FC<CanvasColumnProps> = ({
+  canvasIndex,
   column,
   panels,
   onDeletePanel,
@@ -29,7 +31,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
   const { handleResize } = useAppState();
   const handleAddPanel = () => {
     const newPanelId = `${Math.random().toString(16).slice(2)}`;
-    onAddPanel(column, newPanelId);
+    onAddPanel(canvasIndex, column, newPanelId);
   };
 
   return (
@@ -41,17 +43,22 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
             id={panel.id}
             order={index}
             defaultSize={100 / panels.length}
-            onResize={(size) => handleResize(panel.id, size)}
+            onResize={(size) => handleResize(canvasIndex, panel.id, size)}
           >
             <div className="relative h-full">
-              <DroppableArea id={panel.id}>
+              <DroppableArea id={panel.id} canvasIndex={canvasIndex}>
                 {panel.item ? (
-                  <SortableItem id={panel.item.id} item={panel.item}>
+                  <SortableItem
+                    id={`${canvasIndex}_${panel.id}_${panel.item.id}`}
+                    item={panel.item}
+                  >
                     <div className="bg-slate-300 text-slate-500 p-2 rounded h-full w-full flex items-center justify-center z-20">
                       {panel.item.title}
                       <button
                         className="font-bold pl-2 cursor-pointer"
-                        onClickCapture={() => onRemoveItem(panel.id)}
+                        onClickCapture={() =>
+                          onRemoveItem(canvasIndex, panel.id)
+                        }
                       >
                         x
                       </button>
@@ -69,7 +76,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
 
               {panels.length > 1 && (
                 <button
-                  onClick={() => onDeletePanel(panel.id, column)}
+                  onClick={() => onDeletePanel(canvasIndex, panel.id, column)}
                   className="absolute top-0 right-0 m-2 bg-red-500 text-white px-2 py-1 rounded text-xs"
                 >
                   <BadgeMinus />

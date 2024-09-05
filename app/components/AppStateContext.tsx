@@ -38,78 +38,135 @@ export interface Panel {
   item?: Item | null;
 }
 
+export type Canvas = {
+  id?: string;
+  panels: Panel[][];
+};
+
 // Initial state
-const initialPanelsState: Panel[][] = [
-  [createEmptyPanel("panel-1"), createEmptyPanel("panel-2")],
-  [
-    createEmptyPanel("panel-3"),
-    createEmptyPanel("panel-4"),
-    createEmptyPanel("panel-5"),
-  ],
+const initialState: Canvas[] = [
+  {
+    panels: [
+      [createEmptyPanel("panel-1"), createEmptyPanel("panel-2")],
+      [
+        createEmptyPanel("panel-3"),
+        createEmptyPanel("panel-4"),
+        createEmptyPanel("panel-5"),
+      ],
+    ],
+  },
+  {
+    panels: [
+      [createEmptyPanel("panel-1.1"), createEmptyPanel("panel-1.2")],
+      [
+        createEmptyPanel("panel-1.3"),
+        createEmptyPanel("panel-1.4"),
+        createEmptyPanel("panel-1.5"),
+      ],
+    ],
+  },
 ];
 
 // action types
 type PanelAction =
-  | { type: "DROP_ITEM"; overId: UniqueIdentifier; item: any }
+  | {
+      type: "DROP_ITEM";
+      canvasIndx: number;
+      overId: UniqueIdentifier;
+      item: any;
+    }
   | {
       type: "SWAP_ITEMS";
+      canvasIndx: number;
       flatArray: Panel[];
     }
-  | { type: "RESIZE_PANEL"; panelId: string; size: number }
-  | { type: "ADD_PANEL"; column: number; id: string }
-  | { type: "DELETE_PANEL"; id: string; column: number }
-  | { type: "REMOVE_ITEM"; id: string };
+  | { type: "RESIZE_PANEL"; canvasIndx: number; panelId: string; size: number }
+  | { type: "ADD_PANEL"; canvasIndx: number; column: number; id: string }
+  | { type: "DELETE_PANEL"; canvasIndx: number; id: string; column: number }
+  | { type: "REMOVE_ITEM"; canvasIndx: number; id: string };
 
 // Reducer function
-const panelsReducer = (state: Panel[][], action: PanelAction): Panel[][] => {
+const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
+  const copy = [...state];
   switch (action.type) {
     case "DROP_ITEM":
-      const itemAlreadyDropped = state.some((column) =>
-        column.some((panel) => panel.item && panel.item.id === action.item.id)
+      const itemAlreadyDropped = state[action.canvasIndx].panels.some(
+        (column) =>
+          column.some((panel) => panel.item && panel.item.id === action.item.id)
       );
 
       if (itemAlreadyDropped) {
         return state;
       }
-      return state.map((column) =>
-        column.map((panel) =>
-          panel.id === action.overId ? { ...panel, item: action.item } : panel
-        )
-      );
+
+      copy[action.canvasIndx] = {
+        ...copy[action.canvasIndx],
+        panels: copy[action.canvasIndx].panels.map((column) =>
+          column.map((panel) =>
+            panel.id === action.overId ? { ...panel, item: action.item } : panel
+          )
+        ),
+      };
+
+      return copy;
+
     case "SWAP_ITEMS":
-      const newState = unflattenArray(
+      const newPanels = unflattenArray(
         action.flatArray,
-        state[0].length,
-        state[1].length
+        state[action.canvasIndx].panels[0].length,
+        state[action.canvasIndx].panels[1].length
       );
-      return newState;
+      copy[action.canvasIndx] = {
+        ...copy[action.canvasIndx],
+        panels: newPanels,
+      };
+      return copy;
 
     case "RESIZE_PANEL":
-      return state.map((column) =>
-        column.map((panel) =>
-          panel.id === action.panelId
-            ? { ...panel, size: Math.round(action.size) }
-            : panel
-        )
-      );
+      copy[action.canvasIndx] = {
+        ...copy[action.canvasIndx],
+        panels: copy[action.canvasIndx].panels.map((column) =>
+          column.map((panel) =>
+            panel.id === action.panelId
+              ? { ...panel, size: Math.round(action.size) }
+              : panel
+          )
+        ),
+      };
+      return copy;
+
     case "ADD_PANEL":
-      return state.map((column, index) =>
-        index === action.column
-          ? [...column, createEmptyPanel(`panel-${action.id}`)]
-          : column
-      );
+      copy[action.canvasIndx] = {
+        ...copy[action.canvasIndx],
+        panels: copy[action.canvasIndx].panels.map((column, index) =>
+          index === action.column
+            ? [...column, createEmptyPanel(`panel-${action.id}`)]
+            : column
+        ),
+      };
+      return copy;
+
     case "DELETE_PANEL":
-      return state.map((column, index) =>
-        index === action.column
-          ? column.filter((panel) => panel.id !== action.id)
-          : column
-      );
+      copy[action.canvasIndx] = {
+        ...copy[action.canvasIndx],
+        panels: copy[action.canvasIndx].panels.map((column, index) =>
+          index === action.column
+            ? column.filter((panel) => panel.id !== action.id)
+            : column
+        ),
+      };
+      return copy;
+
     case "REMOVE_ITEM":
-      return state.map((column) =>
-        column.map((panel) =>
-          panel.id === action.id ? { ...panel, item: null } : panel
-        )
-      );
+      copy[action.canvasIndx] = {
+        ...copy[action.canvasIndx],
+        panels: copy[action.canvasIndx].panels.map((column) =>
+          column.map((panel) =>
+            panel.id === action.id ? { ...panel, item: null } : panel
+          )
+        ),
+      };
+      return copy;
     default:
       return state;
   }
@@ -117,13 +174,18 @@ const panelsReducer = (state: Panel[][], action: PanelAction): Panel[][] => {
 
 // AppStateContext type
 interface AppStateContextType {
-  panels: Panel[][];
-  dropItemToPanel: (overId: UniqueIdentifier, item: any) => void;
-  swapItemsInPanel: (flatArray: Panel[]) => void;
-  removeItemFromPanel: (id: string) => void;
-  handleResize: (panelId: string, size: number) => void;
-  addPanel: (column: number, id: string) => void;
-  deletePanel: (id: string, column: number) => void;
+  state: Canvas[];
+  // panels: Panel[][];
+  dropItemToPanel: (
+    canvasIndx: number,
+    overId: UniqueIdentifier,
+    item: any
+  ) => void;
+  swapItemsInPanel: (canvasIndx: number, flatArray: Panel[]) => void;
+  removeItemFromPanel: (canvasIndx: number, id: string) => void;
+  handleResize: (canvasIndx: number, panelId: string, size: number) => void;
+  addPanel: (canvasIndx: number, column: number, id: string) => void;
+  deletePanel: (canvasIndx: number, id: string, column: number) => void;
 }
 
 // Create the context
@@ -144,36 +206,42 @@ export const useAppState = () => {
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [panels, dispatch] = useReducer(panelsReducer, initialPanelsState);
+  const [state, dispatch] = useReducer(stateReducer, initialState);
+  // const [panels, dispatch] = useReducer(panelsReducer, initialPanelsState);
 
-  const dropItemToPanel = (overId: UniqueIdentifier, item: any) => {
-    dispatch({ type: "DROP_ITEM", overId, item });
+  const dropItemToPanel = (
+    canvasIndx: number,
+    overId: UniqueIdentifier,
+    item: any
+  ) => {
+    dispatch({ type: "DROP_ITEM", canvasIndx, overId, item });
   };
 
-  const swapItemsInPanel = (flatArray: Panel[]) => {
-    dispatch({ type: "SWAP_ITEMS", flatArray });
+  const swapItemsInPanel = (canvasIndx: number, flatArray: Panel[]) => {
+    dispatch({ type: "SWAP_ITEMS", canvasIndx, flatArray });
   };
 
-  const handleResize = useCallback((panelId: string, size: number) => {
-    dispatch({ type: "RESIZE_PANEL", panelId, size });
-  }, []);
-
-  const addPanel = (column: number, id: string) => {
-    dispatch({ type: "ADD_PANEL", column, id });
+  const handleResize = (canvasIndx: number, panelId: string, size: number) => {
+    dispatch({ type: "RESIZE_PANEL", canvasIndx, panelId, size });
   };
 
-  const deletePanel = (id: string, column: number) => {
-    dispatch({ type: "DELETE_PANEL", id, column });
+  const addPanel = (canvasIndx: number, column: number, id: string) => {
+    dispatch({ type: "ADD_PANEL", canvasIndx, column, id });
   };
 
-  const removeItemFromPanel = (id: string) => {
-    dispatch({ type: "REMOVE_ITEM", id });
+  const deletePanel = (canvasIndx: number, id: string, column: number) => {
+    dispatch({ type: "DELETE_PANEL", canvasIndx, id, column });
+  };
+
+  const removeItemFromPanel = (canvasIndx: number, id: string) => {
+    dispatch({ type: "REMOVE_ITEM", canvasIndx, id });
   };
 
   return (
     <AppStateContext.Provider
       value={{
-        panels,
+        // panels,
+        state,
         dropItemToPanel,
         swapItemsInPanel,
         removeItemFromPanel,

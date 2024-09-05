@@ -7,12 +7,16 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  MouseSensor,
+  TouchSensor,
+  DragOverEvent,
 } from "@dnd-kit/core";
 import DraggableItem from "./DraggableItem";
 import { useAppState } from "./AppStateContext";
-import { Canvas } from "./canvas/Canvas";
+
 import { cn } from "../../lib/utils";
 import { arraySwap } from "@dnd-kit/sortable";
+import Canvas from "./canvas/Canvas";
 
 export interface Item {
   id: string | number;
@@ -29,11 +33,14 @@ const ITEMS = Array(25)
 export function ResizableDemo() {
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 2 },
+    }),
+    useSensor(TouchSensor, {
       activationConstraint: { distance: 2 },
     })
   );
-  const { panels, dropItemToPanel, swapItemsInPanel } = useAppState();
+  const { state, dropItemToPanel, swapItemsInPanel } = useAppState();
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -45,40 +52,71 @@ export function ResizableDemo() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    // flat 2D array to use dnd-kit/sortable arraySwap method
-    const items = panels.flatMap((column) => column.map((panel) => panel));
-    // if the active item originated from a panel find the panel index
-    const activePanelIndex = items.findIndex((x) => x.item?.id === active.id);
+    console.log(`activeId: ${active.id}`);
+
+    const activeCanvasIndx: number | null = active.id
+      .toString()
+      .includes("pool-item")
+      ? null
+      : Number(active.id.toString().split("_")[0]);
 
     if (over) {
-      console.log(over.id);
-      // find over panel index
-      const overPopulatedPanelIndx = items.findIndex(
-        (x) => x.item?.id === over.id
+      const overCanvasIndx = over.data.current?.canvasIndex as number;
+
+      console.log(`overCanvasIndx: ${overCanvasIndx}`);
+      console.log(`activeCanvasIndx: ${activeCanvasIndx}`);
+
+      // flat 2D array to use dnd-kit/sortable arraySwap method
+      const panels = state[overCanvasIndx].panels.flatMap((column) =>
+        column.map((panel) => panel)
       );
-      const overEmptyPanelIndx = items.findIndex((x) => x.id === over.id);
+      // if the active item originated from a panel find the panel index
+      const activePanelIndex = panels.findIndex(
+        (x) => `${overCanvasIndx}_${x.id}_${x.item?.id}` === active.id
+      );
+      // find over panel index
+      const overPopulatedPanelIndx = panels.findIndex(
+        (x) => `${overCanvasIndx}_${x.item?.id}` === over.id
+      );
+      const overEmptyPanelIndx = panels.findIndex((x) => x.id === over.id);
       const overPanelIndex =
         overPopulatedPanelIndx !== -1
           ? overPopulatedPanelIndx
           : overEmptyPanelIndx;
 
       if (activePanelIndex !== -1) {
-        const swappedArray = arraySwap(items, activePanelIndex, overPanelIndex);
-        swapItemsInPanel(swappedArray);
+        const swappedArray = arraySwap(
+          panels,
+          activePanelIndex,
+          overPanelIndex
+        );
+        swapItemsInPanel(overCanvasIndx, swappedArray);
       } else {
-        dropItemToPanel(over.id, active.data.current);
+        dropItemToPanel(overCanvasIndx, over.id, active.data.current);
       }
+      console.log(panels);
+      // console.log(canvasIndx);
+      console.log(`active: ${activePanelIndex}`);
+      // console.log(`over: ${overPanelIndex}`);
+    } else {
+      setActiveItem(null);
     }
   };
 
-  useEffect(() => {
-    if (panels) console.log(panels);
-  }, [panels]);
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    // console.log(over);
+  };
+
+  // useEffect(() => {
+  //   if (panels) console.log(panels);
+  // }, [panels]);
 
   return (
     <DndContext
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
       sensors={sensors}
     >
       <div className="flex flex-col space-y-4 p-4">
@@ -102,25 +140,8 @@ export function ResizableDemo() {
         </div>
 
         <div className="flex flex-wrap gap-4 border p-4 rounded-md bg-slate-100">
-          <Canvas />
-        </div>
-
-        <div className="flex gap-2 items-center text-sm">
-          <div>Position 00:</div>
-          <div className="p-1 bg-slate-100">
-            {panels[0][0]?.item
-              ? `${panels[0][0].item.title} with size ${panels[0][0].size}%`
-              : "empty"}
-          </div>
-        </div>
-
-        <div className="flex gap-2 items-center text-sm">
-          <div>Position 10:</div>
-          <div className="p-1 bg-slate-100">
-            {panels[1][0]?.item
-              ? `${panels[1][0].item.title} with size ${panels[1][0].size}%`
-              : "empty"}
-          </div>
+          <Canvas index={0} />
+          <Canvas index={1} />
         </div>
       </div>
       <DragOverlay>

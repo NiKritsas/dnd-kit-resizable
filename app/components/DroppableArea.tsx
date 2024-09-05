@@ -3,11 +3,19 @@ import { useDroppable, UniqueIdentifier } from "@dnd-kit/core";
 
 interface DroppableAreaProps {
   id: UniqueIdentifier;
+  canvasIndex: number;
   children?: React.ReactNode;
 }
 
-const DroppableArea: React.FC<DroppableAreaProps> = ({ id, children }) => {
-  const { setNodeRef, isOver } = useDroppable({ id });
+const DroppableArea: React.FC<DroppableAreaProps> = ({
+  id,
+  canvasIndex,
+  children,
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id,
+    data: { canvasIndex },
+  });
 
   return (
     <div
