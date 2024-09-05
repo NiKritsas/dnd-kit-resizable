@@ -56,63 +56,64 @@ export function ResizableDemo() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (over) {
-      const overCanvasIndx = over.data.current?.canvasIndex as number;
-      const activeCanvasIndx = active.data.current?.canvasIndex as number;
+    if (!over) {
+      // No valid drop target
+      setActiveItem(null);
+      return;
+    }
 
-      // flat 2D array to use dnd-kit/sortable arraySwap method
-      const panels = state[overCanvasIndx].panels.flatMap((column) =>
-        column.map((panel) => panel)
-      );
-      // if the active item originated from a panel find the panel index
-      const activePanelIndex = panels.findIndex(
-        (x) => `${x.id}_${x.item?.id}` === active.id
-      );
-      // find over panel index
-      const overPopulatedPanelIndx = panels.findIndex(
-        (x) => `${x.id}_${x.item?.id}` === over.id
-      );
-      const overEmptyPanelIndx = panels.findIndex((x) => x.id === over.id);
-      const overPanelIndex =
-        overPopulatedPanelIndx !== -1
-          ? overPopulatedPanelIndx
-          : overEmptyPanelIndx;
+    const overCanvasIndx = over.data.current?.canvasIndex as number;
+    const activeCanvasIndx = active.data.current?.canvasIndex as number;
 
-      // console.log(`overCanvasIndex: ${overCanvasIndx}`);
-      // console.log(`activeCanvasIndex: ${activeCanvasIndx}`);
-      // console.log(`activePanelIndex: ${activePanelIndex}`);
-      // console.log(`overPopulatedPanelIndex: ${overPopulatedPanelIndx}`);
-      // console.log(`overEmptyPanelIndex: ${overEmptyPanelIndx}`);
+    // Get the panel data for the "over" canvas
+    const panels = state[overCanvasIndx].panels.flatMap((column) =>
+      column.map((panel) => panel)
+    );
 
-      if (activeCanvasIndx !== undefined) {
-        // Swap items in the same canvas (sortable context)
-        if (activeCanvasIndx === overCanvasIndx) {
-          console.log("Swapped items in canvas");
-          const swappedArray = arraySwap(
-            panels,
-            activePanelIndex,
-            overPanelIndex
-          );
-          swapItemsInPanel(overCanvasIndx, swappedArray);
-        } else {
-          console.log("Moved to different canvas");
-          console.log(active);
-          dropItemToPanel(overCanvasIndx, over.id, activeItem);
-          removeItemFromPanel(
-            overCanvasIndx,
-            active.id.toString().split("_")[0]
-          );
-        }
-        // Drop panel item to empty panel on a different canvas (item must be substructed from the origin canvas??)
-        // Swap items from different canvases (not sortable context)
+    // Find active and over panel indices
+    const activePanelIndex = panels.findIndex(
+      (x) => `${x.id}_${x.item?.id}` === active.id
+    );
+    const overPopulatedPanelIndx = panels.findIndex(
+      (x) => `${x.id}_${x.item?.id}` === over.id
+    );
+    const overEmptyPanelIndx = panels.findIndex((x) => x.id === over.id);
+    const overPanelIndex =
+      overPopulatedPanelIndx !== -1
+        ? overPopulatedPanelIndx
+        : overEmptyPanelIndx;
+
+    if (activeCanvasIndx !== undefined && overCanvasIndx !== undefined) {
+      if (activeCanvasIndx === overCanvasIndx) {
+        // Same canvas, just swap the items within the same canvas
+        console.log("Swapped items within the same canvas");
+        const swappedArray = arraySwap(
+          panels,
+          activePanelIndex,
+          overPanelIndex
+        );
+        swapItemsInPanel(overCanvasIndx, swappedArray);
       } else {
-        console.log("Dropped pool item on empty panel");
-        console.log(over.id, activeItem);
+        // Different canvas, move the item to the new canvas and remove from the old one
+        console.log("Moved item to a different canvas");
+
+        // Drop the item into the new panel in the target canvas
         dropItemToPanel(overCanvasIndx, over.id, activeItem);
+
+        // Remove the item from the original canvas panel
+        removeItemFromPanel(
+          activeCanvasIndx,
+          active.id.toString().split("_")[0]
+        );
       }
     } else {
-      setActiveItem(null);
+      // If the item is coming from a pool (not from any specific panel) and being dropped on a new canvas
+      console.log("Dropped a pool item into an empty panel");
+      dropItemToPanel(overCanvasIndx, over.id, activeItem);
     }
+
+    // Clear active item after drag end
+    setActiveItem(null);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
