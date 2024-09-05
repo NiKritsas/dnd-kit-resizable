@@ -40,8 +40,13 @@ export function ResizableDemo() {
       activationConstraint: { distance: 2 },
     })
   );
-  const { state, dropItemToPanel, swapItemsInPanel, removeItemFromPanel } =
-    useAppState();
+  const {
+    state,
+    dropItemToPanel,
+    swapItemsInPanel,
+    removeItemFromPanel,
+    addCanvas,
+  } = useAppState();
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -121,6 +126,9 @@ export function ResizableDemo() {
   // useEffect(() => {
   //   if (panels) console.log(panels);
   // }, [panels]);
+  useEffect(() => {
+    console.log(state);
+  }, [state.length]);
 
   return (
     <DndContext
@@ -150,8 +158,9 @@ export function ResizableDemo() {
         </div>
 
         <div className="flex flex-wrap gap-4 border p-4 rounded-md bg-slate-100">
-          <Canvas index={0} />
-          <Canvas index={1} />
+          {state.map((canvas, index) => (
+            <Canvas key={canvas.id} index={index} />
+          ))}
         </div>
       </div>
       <DragOverlay>
@@ -171,6 +180,10 @@ export function ResizableDemo() {
           </div>
         )}
       </DragOverlay>
+      <div>
+        {/* Button add a new canvas */}
+        <button onClick={addCanvas}>Add New Canvas</button>
+      </div>
     </DndContext>
   );
 }

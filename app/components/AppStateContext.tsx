@@ -9,6 +9,25 @@ const createEmptyPanel = (id: string): Panel => ({
   item: null,
 });
 
+// Utility to create a new canvas with empty panels
+const createNewCanvas = (index: number): Canvas => {
+  const canvasId = `canvas-${index}`;
+  return {
+    id: canvasId,
+    panels: [
+      [
+        createEmptyPanel(`panel-1.${index}`),
+        createEmptyPanel(`panel-2.${index}`),
+      ],
+      [
+        createEmptyPanel(`panel-3.${index}`),
+        createEmptyPanel(`panel-4.${index}`),
+        createEmptyPanel(`panel-5.${index}`),
+      ],
+    ],
+  };
+};
+
 const unflattenArray = (
   flatArray: Panel[],
   columnOneLength: number,
@@ -39,28 +58,7 @@ export type Canvas = {
 };
 
 // Initial state
-const initialState: Canvas[] = [
-  {
-    panels: [
-      [createEmptyPanel("panel-1"), createEmptyPanel("panel-2")],
-      [
-        createEmptyPanel("panel-3"),
-        createEmptyPanel("panel-4"),
-        createEmptyPanel("panel-5"),
-      ],
-    ],
-  },
-  {
-    panels: [
-      [createEmptyPanel("panel-1.1"), createEmptyPanel("panel-1.2")],
-      [
-        createEmptyPanel("panel-1.3"),
-        createEmptyPanel("panel-1.4"),
-        createEmptyPanel("panel-1.5"),
-      ],
-    ],
-  },
-];
+const initialState: Canvas[] = [createNewCanvas(0), createNewCanvas(1)];
 
 // action types
 type PanelAction =
@@ -78,7 +76,8 @@ type PanelAction =
   | { type: "RESIZE_PANEL"; canvasIndx: number; panelId: string; size: number }
   | { type: "ADD_PANEL"; canvasIndx: number; column: number; id: string }
   | { type: "DELETE_PANEL"; canvasIndx: number; id: string; column: number }
-  | { type: "REMOVE_ITEM"; canvasIndx: number; id: string };
+  | { type: "REMOVE_ITEM"; canvasIndx: number; id: string }
+  | { type: "ADD_CANVAS"; newCanvas: Canvas };
 
 // Reducer function
 const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
@@ -164,6 +163,10 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
         ),
       };
       return copy;
+
+    case "ADD_CANVAS":
+      return [...state, action.newCanvas];
+
     default:
       return state;
   }
@@ -172,7 +175,6 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
 // AppStateContext type
 interface AppStateContextType {
   state: Canvas[];
-  // panels: Panel[][];
   dropItemToPanel: (
     canvasIndx: number,
     overId: UniqueIdentifier,
@@ -183,6 +185,7 @@ interface AppStateContextType {
   handleResize: (canvasIndx: number, panelId: string, size: number) => void;
   addPanel: (canvasIndx: number, column: number, id: string) => void;
   deletePanel: (canvasIndx: number, id: string, column: number) => void;
+  addCanvas: () => void; // Add function to add a canvas
 }
 
 // Create the context
@@ -190,7 +193,7 @@ const AppStateContext = createContext<AppStateContextType | undefined>(
   undefined
 );
 
-//use the AppStateContext
+// useAppState hook
 export const useAppState = () => {
   const context = useContext(AppStateContext);
   if (!context) {
@@ -199,12 +202,11 @@ export const useAppState = () => {
   return context;
 };
 
-// AppStateProvider now :
+// AppStateProvider component
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(stateReducer, initialState);
-  // const [panels, dispatch] = useReducer(panelsReducer, initialPanelsState);
 
   const dropItemToPanel = (
     canvasIndx: number,
@@ -234,10 +236,14 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "REMOVE_ITEM", canvasIndx, id });
   };
 
+  const addCanvas = () => {
+    const newCanvas = createNewCanvas(state.length + 1);
+    dispatch({ type: "ADD_CANVAS", newCanvas });
+  };
+
   return (
     <AppStateContext.Provider
       value={{
-        // panels,
         state,
         dropItemToPanel,
         swapItemsInPanel,
@@ -245,6 +251,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         handleResize,
         addPanel,
         deletePanel,
+        addCanvas,
       }}
     >
       {children}
