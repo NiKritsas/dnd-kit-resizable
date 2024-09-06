@@ -10,26 +10,25 @@ const createPanel = (id: string, item?: Item): Panel => ({
 });
 
 // Utility to create a new canvas with empty panels
-const createNewCanvas = (index: number): Canvas => {
-  const canvasId = `canvas-${index}`;
+const createNewCanvas = (canvasId: string): Canvas => {
+  const id = `canvas-${canvasId}`;
   return {
-    id: canvasId,
+    id: id,
     panels: [
-      [createPanel(`panel-1.${index}`), createPanel(`panel-2.${index}`)],
+      [createPanel(`panel-1.${id}`), createPanel(`panel-2.${id}`)],
       [
-        createPanel(`panel-3.${index}`),
-        createPanel(`panel-4.${index}`),
-        createPanel(`panel-5.${index}`),
+        createPanel(`panel-3.${id}`),
+        createPanel(`panel-4.${id}`),
+        createPanel(`panel-5.${id}`),
       ],
     ],
   };
 };
 
 const createNewCanvasWithItems = (
-  index: number,
+  canvasId: string,
   items: OutfitItem[]
 ): Canvas => {
-  const canvasId = `canvas-${index}`;
   let maxRowCol1 = 0;
   let maxRowCol2 = 0;
 
@@ -45,11 +44,11 @@ const createNewCanvasWithItems = (
 
   const panelsColumn1: Panel[] = Array.from(
     { length: maxRowCol1 + 1 },
-    (_, rowIndex) => createPanel(`panel-${rowIndex}.${index}`)
+    (_, rowIndex) => createPanel(`panel-${rowIndex}.${canvasId}`)
   );
   const panelsColumn2: Panel[] = Array.from(
     { length: maxRowCol2 + 1 },
-    (_, rowIndex) => createPanel(`panel-${rowIndex}.${index}`)
+    (_, rowIndex) => createPanel(`panel-${rowIndex}.${canvasId}`)
   );
 
   items.forEach((item) => {
@@ -136,7 +135,10 @@ export type Canvas = {
 };
 
 // Initial state
-const initialState: Canvas[] = [createNewCanvas(0), createNewCanvas(1)];
+const initialState: Canvas[] = [
+  createNewCanvas(Math.random().toString(16).slice(2)),
+  createNewCanvas(Math.random().toString(16).slice(2)),
+];
 
 // action types
 type PanelAction =
@@ -371,12 +373,15 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addCanvas = () => {
-    const newCanvas = createNewCanvas(state.length + 1);
+    const newCanvas = createNewCanvas(Math.random().toString(16).slice(2));
     dispatch({ type: "ADD_CANVAS", newCanvas });
   };
 
   const createCanvasWithItems = (items: OutfitItem[]) => {
-    const newCanvas = createNewCanvasWithItems(state.length, items);
+    const newCanvas = createNewCanvasWithItems(
+      Math.random().toString(16).slice(2),
+      items
+    );
     dispatch({ type: "CREATE_CANVAS_WITH_ITEMS", newCanvas });
   };
 

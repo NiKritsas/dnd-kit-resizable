@@ -103,7 +103,7 @@ export function ResizableDemo() {
     if (activeCanvasIndx !== undefined && overCanvasIndx !== undefined) {
       if (activeCanvasIndx === overCanvasIndx) {
         // Same canvas, just swap the items within the same canvas
-        console.log("Swapped items within the same canvas");
+        // console.log("Swapped items within the same canvas");
         const swappedArray = arraySwap(
           panels,
           activePanelIndex,
@@ -112,7 +112,7 @@ export function ResizableDemo() {
         swapItemsInPanel(overCanvasIndx, swappedArray);
       } else {
         // Different canvas
-        console.log("Moved item to a different canvas");
+        // console.log("Moved item to a different canvas");
 
         // Drop the item into the new panel in the target canvas
         dropItemToPanel(overCanvasIndx, over.id, activeItem);
@@ -122,7 +122,7 @@ export function ResizableDemo() {
       }
     } else {
       // If the item is coming from a pool (not from any specific panel) and being dropped on a new canvas
-      console.log("Dropped a pool item into an empty panel");
+      // console.log("Dropped a pool item into an empty panel");
       dropItemToPanel(overCanvasIndx, over.id, activeItem);
     }
 
@@ -137,7 +137,7 @@ export function ResizableDemo() {
 
   useEffect(() => {
     console.log(state);
-  }, [state.length]);
+  }, [state]);
 
   return (
     <DndContext

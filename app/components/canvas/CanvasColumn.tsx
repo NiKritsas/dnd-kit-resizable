@@ -28,9 +28,11 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
   onAddPanel,
   onRemoveItem,
 }) => {
-  const { handleResize } = useAppState();
+  const { state, handleResize } = useAppState();
   const handleAddPanel = () => {
-    const newPanelId = `${Math.random().toString(16).slice(2)}`;
+    const newPanelId = `${Math.random().toString(16).slice(2)}.${
+      state[canvasIndex].id
+    }`;
     onAddPanel(canvasIndex, column, newPanelId);
   };
 
