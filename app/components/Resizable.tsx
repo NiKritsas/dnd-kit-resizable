@@ -16,6 +16,7 @@ import { useAppState } from "./AppStateContext";
 import { cn } from "../../lib/utils";
 import { arraySwap } from "@dnd-kit/sortable";
 import Canvas from "./canvas/Canvas";
+import { PlusIcon } from "lucide-react";
 
 export interface Item {
   id: string | number;
@@ -43,7 +44,7 @@ export function ResizableDemo() {
     state,
     dropItemToPanel,
     swapItemsInPanel,
-    removeItemFromPanel,
+    addItemToCanvases,
     addCanvas,
   } = useAppState();
 
@@ -122,9 +123,6 @@ export function ResizableDemo() {
     // console.log(over);
   };
 
-  // useEffect(() => {
-  //   if (panels) console.log(panels);
-  // }, [panels]);
   useEffect(() => {
     console.log(state);
   }, [state.length]);
@@ -148,15 +146,18 @@ export function ResizableDemo() {
                 id={`pool-item-${item.id}`}
                 item={item}
               >
-                <div className="bg-blue-500 text-white p-2 rounded">
-                  {item.title}
+                <div className="bg-blue-500 text-white p-2 rounded flex  gap-2">
+                  <div className="font-semibold">{item.title}</div>
+                  <button onClick={() => addItemToCanvases(item)}>
+                    <PlusIcon className="h-4 w-4" />
+                  </button>
                 </div>
               </DraggableItem>
             ))}
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 border p-4 rounded-md bg-slate-100">
+        <div className="flex flex-wrap gap-4 border p-6 rounded-md bg-slate-100">
           {state.map((canvas, index) => (
             <Canvas key={canvas.id} index={index} />
           ))}

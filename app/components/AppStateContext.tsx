@@ -3,10 +3,10 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { Item } from "./Resizable";
 
 // Utility to create a new empty panel with a unique id
-const createEmptyPanel = (id: string): Panel => ({
+const createPanel = (id: string, item?: Item): Panel => ({
   id: id,
   size: 50,
-  item: null,
+  item: item ? item : null,
 });
 
 // Utility to create a new canvas with empty panels
@@ -15,14 +15,11 @@ const createNewCanvas = (index: number): Canvas => {
   return {
     id: canvasId,
     panels: [
+      [createPanel(`panel-1.${index}`), createPanel(`panel-2.${index}`)],
       [
-        createEmptyPanel(`panel-1.${index}`),
-        createEmptyPanel(`panel-2.${index}`),
-      ],
-      [
-        createEmptyPanel(`panel-3.${index}`),
-        createEmptyPanel(`panel-4.${index}`),
-        createEmptyPanel(`panel-5.${index}`),
+        createPanel(`panel-3.${index}`),
+        createPanel(`panel-4.${index}`),
+        createPanel(`panel-5.${index}`),
       ],
     ],
   };
@@ -63,6 +60,10 @@ const initialState: Canvas[] = [createNewCanvas(0), createNewCanvas(1)];
 // action types
 type PanelAction =
   | {
+      type: "ADD_ITEM_TO_CANVASES";
+      item: any;
+    }
+  | {
       type: "DROP_ITEM";
       canvasIndx: number;
       overId: UniqueIdentifier;
@@ -85,6 +86,12 @@ type PanelAction =
 const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
   const copy = [...state];
   switch (action.type) {
+    case "ADD_ITEM_TO_CANVASES":
+      // map through all canvases and add the item to the first empty panel of each canvas
+
+      // if a canvas doesn't have empty panels create one and with the item already in it
+      console.log(`Add ${action.item.title} to canvases`);
+      return state;
     case "DROP_ITEM":
       const id = action.overId.toString().split("_")[0];
       const itemAlreadyDropped = state[action.canvasIndx].panels.some(
@@ -137,7 +144,7 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
         ...copy[action.canvasIndx],
         panels: copy[action.canvasIndx].panels.map((column, index) =>
           index === action.column
-            ? [...column, createEmptyPanel(`panel-${action.id}`)]
+            ? [...column, createPanel(`panel-${action.id}`)]
             : column
         ),
       };
@@ -192,6 +199,7 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
 // AppStateContext type
 interface AppStateContextType {
   state: Canvas[];
+  addItemToCanvases: (item: Item) => void;
   dropItemToPanel: (
     canvasIndx: number,
     overId: UniqueIdentifier,
@@ -226,6 +234,10 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(stateReducer, initialState);
+
+  const addItemToCanvases = (item: any) => {
+    dispatch({ type: "ADD_ITEM_TO_CANVASES", item });
+  };
 
   const dropItemToPanel = (
     canvasIndx: number,
@@ -272,6 +284,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     <AppStateContext.Provider
       value={{
         state,
+        addItemToCanvases,
         dropItemToPanel,
         swapItemsInPanel,
         removeItemFromPanel,
