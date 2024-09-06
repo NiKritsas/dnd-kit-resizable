@@ -25,6 +25,56 @@ const createNewCanvas = (index: number): Canvas => {
   };
 };
 
+const createNewCanvasWithItems = (
+  index: number,
+  items: OutfitItem[]
+): Canvas => {
+  const canvasId = `canvas-${index}`;
+  let maxRowCol1 = 0;
+  let maxRowCol2 = 0;
+
+  items.forEach((item) => {
+    if (item.position.col === 0 && item.position.row > maxRowCol1) {
+      maxRowCol1 = item.position.row;
+    }
+
+    if (item.position.col === 1 && item.position.row > maxRowCol2) {
+      maxRowCol2 = item.position.row;
+    }
+  });
+
+  const panelsColumn1: Panel[] = Array.from(
+    { length: maxRowCol1 + 1 },
+    (_, rowIndex) => createPanel(`panel-${rowIndex}.${index}`)
+  );
+  const panelsColumn2: Panel[] = Array.from(
+    { length: maxRowCol2 + 1 },
+    (_, rowIndex) => createPanel(`panel-${rowIndex}.${index}`)
+  );
+
+  items.forEach((item) => {
+    const { col, row } = item.position;
+
+    if (col === 0 && panelsColumn1[row]) {
+      panelsColumn1[row] = {
+        ...panelsColumn1[row],
+        item: item,
+      };
+    } else if (col === 1 && panelsColumn2[row]) {
+      panelsColumn2[row] = {
+        ...panelsColumn2[row],
+        item: item,
+      };
+    } else {
+      console.error(`Panel not found for row ${row}, column ${col}`);
+    }
+  });
+
+  return {
+    id: canvasId,
+    panels: [panelsColumn1, panelsColumn2],
+  };
+};
 const unflattenArray = (
   flatArray: Panel[],
   columnOneLength: number,
@@ -49,6 +99,13 @@ export interface Panel {
   item?: Item | null;
 }
 
+export interface OutfitItem extends Item {
+  position: {
+    col: number;
+    row: number;
+  };
+}
+
 export type Canvas = {
   id?: string;
   panels: Panel[][];
@@ -59,26 +116,20 @@ const initialState: Canvas[] = [createNewCanvas(0), createNewCanvas(1)];
 
 // action types
 type PanelAction =
-  | {
-      type: "ADD_ITEM_TO_CANVASES";
-      item: any;
-    }
+  | { type: "ADD_ITEM_TO_CANVASES"; item: any }
   | {
       type: "DROP_ITEM";
       canvasIndx: number;
       overId: UniqueIdentifier;
       item: any;
     }
-  | {
-      type: "SWAP_ITEMS";
-      canvasIndx: number;
-      flatArray: Panel[];
-    }
+  | { type: "SWAP_ITEMS"; canvasIndx: number; flatArray: Panel[] }
   | { type: "RESIZE_PANEL"; canvasIndx: number; panelId: string; size: number }
   | { type: "ADD_PANEL"; canvasIndx: number; column: number; id: string }
   | { type: "DELETE_PANEL"; canvasIndx: number; id: string; column: number }
   | { type: "REMOVE_ITEM"; canvasIndx: number; id: string }
   | { type: "ADD_CANVAS"; newCanvas: Canvas }
+  | { type: "CREATE_CANVAS_WITH_ITEMS"; newCanvas: Canvas } // New action for creating a canvas with items
   | { type: "DELETE_CANVAS"; canvasIndx: number }
   | { type: "RESET_CANVAS"; canvasIndx: number };
 
@@ -87,11 +138,9 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
   const copy = [...state];
   switch (action.type) {
     case "ADD_ITEM_TO_CANVASES":
-      // map through all canvases and add the item to the first empty panel of each canvas
-
-      // if a canvas doesn't have empty panels create one and with the item already in it
       console.log(`Add ${action.item.title} to canvases`);
       return state;
+
     case "DROP_ITEM":
       const id = action.overId.toString().split("_")[0];
       const itemAlreadyDropped = state[action.canvasIndx].panels.some(
@@ -176,6 +225,9 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
     case "ADD_CANVAS":
       return [...state, action.newCanvas];
 
+    case "CREATE_CANVAS_WITH_ITEMS":
+      return [...state, action.newCanvas];
+
     case "DELETE_CANVAS":
       return state.filter((_, index) => index !== action.canvasIndx);
 
@@ -211,8 +263,9 @@ interface AppStateContextType {
   addPanel: (canvasIndx: number, column: number, id: string) => void;
   deletePanel: (canvasIndx: number, id: string, column: number) => void;
   addCanvas: () => void;
+  createCanvasWithItems: (items: OutfitItem[]) => void;
   deleteCanvas: (canvasIndx: number) => void;
-  resetCanvas: (canvasIndx: number) => void; // Expose resetCanvas function
+  resetCanvas: (canvasIndx: number) => void;
 }
 
 // Create the context
@@ -272,6 +325,11 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "ADD_CANVAS", newCanvas });
   };
 
+  const createCanvasWithItems = (items: OutfitItem[]) => {
+    const newCanvas = createNewCanvasWithItems(state.length, items);
+    dispatch({ type: "CREATE_CANVAS_WITH_ITEMS", newCanvas });
+  };
+
   const deleteCanvas = (canvasIndx: number) => {
     dispatch({ type: "DELETE_CANVAS", canvasIndx });
   };
@@ -292,6 +350,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         addPanel,
         deletePanel,
         addCanvas,
+        createCanvasWithItems,
         deleteCanvas,
         resetCanvas,
       }}

@@ -11,7 +11,7 @@ import {
   DragOverEvent,
 } from "@dnd-kit/core";
 import DraggableItem from "./DraggableItem";
-import { useAppState } from "./AppStateContext";
+import { OutfitItem, useAppState } from "./AppStateContext";
 
 import { cn } from "../../lib/utils";
 import { arraySwap } from "@dnd-kit/sortable";
@@ -22,6 +22,13 @@ export interface Item {
   id: string | number;
   title: string;
 }
+
+const OUTFITS: OutfitItem[] = [
+  { id: "1", title: "Item 1", position: { col: 0, row: 5 } },
+  { id: "2", title: "Item 2", position: { col: 1, row: 0 } },
+  { id: "3", title: "Item 3", position: { col: 0, row: 1 } },
+  { id: "4", title: "Item 4", position: { col: 1, row: 2 } },
+];
 
 const ITEMS = Array(25)
   .fill(null)
@@ -46,7 +53,12 @@ export function ResizableDemo() {
     swapItemsInPanel,
     addItemToCanvases,
     addCanvas,
+    createCanvasWithItems,
   } = useAppState();
+
+  const addCanvasWithItems = () => {
+    createCanvasWithItems(OUTFITS);
+  };
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -180,9 +192,10 @@ export function ResizableDemo() {
           </div>
         )}
       </DragOverlay>
-      <div>
+      <div className="flex-row">
         {/* Button add a new canvas */}
         <button onClick={addCanvas}>Add New Canvas</button>
+        <button onClick={addCanvasWithItems}>Add Canvas with Items</button>
       </div>
     </DndContext>
   );
