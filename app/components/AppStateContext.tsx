@@ -42,6 +42,30 @@ const unflattenArray = (
   return [columnOne, columnTwo];
 };
 
+const findFirstEmptyPanelOfCanvas = (panels: Panel[][]) => {
+  let emptyPanelId: string | null = null;
+
+  panels.some((column) => {
+    return column.some((panel) => {
+      if (panel.item === null) {
+        emptyPanelId = panel.id;
+        return true;
+      } else {
+        return false;
+      }
+    });
+  });
+
+  return emptyPanelId;
+};
+
+const checkIfItemIsInCanvas = (panels: Panel[][], item: Item) => {
+  const result = panels.some((column) =>
+    column.some((panel) => panel.item && panel.item.id === item.id)
+  );
+  return result;
+};
+
 // Panel interface
 export interface Panel {
   id: string;
@@ -87,16 +111,40 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
   const copy = [...state];
   switch (action.type) {
     case "ADD_ITEM_TO_CANVASES":
-      // map through all canvases and add the item to the first empty panel of each canvas
+      // find the first empty panel of each canvas
+      let emptyPanelIds: { canvasIndex: number; panelId: string }[] = [];
+      copy.map((canvas, index) => {
+        const firstEmptyPanel = findFirstEmptyPanelOfCanvas(canvas.panels);
+        if (firstEmptyPanel)
+          emptyPanelIds.push({ canvasIndex: index, panelId: firstEmptyPanel });
+      });
 
-      // if a canvas doesn't have empty panels create one and with the item already in it
-      console.log(`Add ${action.item.title} to canvases`);
-      return state;
+      // add the item in all found empty panels
+      emptyPanelIds.map((el) => {
+        const itemAlreadyDropped = checkIfItemIsInCanvas(
+          state[el.canvasIndex].panels,
+          action.item
+        );
+        if (!itemAlreadyDropped) {
+          copy[el.canvasIndex] = {
+            ...copy[el.canvasIndex],
+            panels: copy[el.canvasIndex].panels.map((column) =>
+              column.map((panel) =>
+                panel.id === el.panelId
+                  ? { ...panel, item: action.item }
+                  : panel
+              )
+            ),
+          };
+        }
+      });
+
+      return copy;
     case "DROP_ITEM":
-      const id = action.overId.toString().split("_")[0];
-      const itemAlreadyDropped = state[action.canvasIndx].panels.some(
-        (column) =>
-          column.some((panel) => panel.item && panel.item.id === action.item.id)
+      const droppedId = action.overId.toString().split("_")[0];
+      const itemAlreadyDropped = checkIfItemIsInCanvas(
+        state[action.canvasIndx].panels,
+        action.item
       );
 
       if (itemAlreadyDropped) {
@@ -107,7 +155,7 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
         ...copy[action.canvasIndx],
         panels: copy[action.canvasIndx].panels.map((column) =>
           column.map((panel) =>
-            panel.id === id ? { ...panel, item: action.item } : panel
+            panel.id === droppedId ? { ...panel, item: action.item } : panel
           )
         ),
       };
