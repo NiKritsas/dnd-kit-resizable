@@ -1,29 +1,13 @@
 import React, { createContext, useContext, useReducer } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { Item } from "./Resizable";
-
-// Utility to create a new empty panel with a unique id
-const createPanel = (id: string, item?: Item): Panel => ({
-  id: id,
-  size: 50,
-  item: item ? item : null,
-});
-
-// Utility to create a new canvas with empty panels
-const createNewCanvas = (canvasId: string): Canvas => {
-  const id = `canvas-${canvasId}`;
-  return {
-    id: id,
-    panels: [
-      [createPanel(`panel-1.${id}`), createPanel(`panel-2.${id}`)],
-      [
-        createPanel(`panel-3.${id}`),
-        createPanel(`panel-4.${id}`),
-        createPanel(`panel-5.${id}`),
-      ],
-    ],
-  };
-};
+import { Canvas, Item, OutfitItem, Panel } from "../../lib/types";
+import {
+  checkIfItemIsInCanvas,
+  createNewEmptyCanvas,
+  createPanel,
+  findFirstEmptyPanelOfCanvas,
+  unflattenArray,
+} from "../../lib/helpers";
 
 const createNewCanvasWithItems = (
   canvasId: string,
@@ -31,117 +15,134 @@ const createNewCanvasWithItems = (
 ): Canvas => {
   let maxRowCol1 = 0;
   let maxRowCol2 = 0;
+  let unusedSizeOfCol1 = 100;
+  let unusedSizeOfCol2 = 100;
 
+  // find max rows for each column and remove their size from the unused
   items.forEach((item) => {
-    if (item.position.col === 0 && item.position.row > maxRowCol1) {
-      maxRowCol1 = item.position.row;
+    if (item.col === 0 && item.row > maxRowCol1) {
+      maxRowCol1 = item.row;
     }
 
-    if (item.position.col === 1 && item.position.row > maxRowCol2) {
-      maxRowCol2 = item.position.row;
+    if (item.col === 1 && item.row > maxRowCol2) {
+      maxRowCol2 = item.row;
     }
   });
 
-  const panelsColumn1: Panel[] = Array.from(
+  // find unused size for each column
+  items.forEach((item) => {
+    if (item.col === 0) {
+      unusedSizeOfCol1 -= item.heightPercentage;
+    }
+    if (item.col === 1) {
+      unusedSizeOfCol2 -= item.heightPercentage;
+    }
+  });
+
+  // create empty panels for each column based on the max rows
+  let panelsColumn1: Panel[] = Array.from(
     { length: maxRowCol1 + 1 },
     (_, rowIndex) => createPanel(`panel-${rowIndex}.${canvasId}`)
   );
-  const panelsColumn2: Panel[] = Array.from(
+  let panelsColumn2: Panel[] = Array.from(
     { length: maxRowCol2 + 1 },
     (_, rowIndex) => createPanel(`panel-${rowIndex}.${canvasId}`)
   );
 
+  // map items and add them to their designated panel
   items.forEach((item) => {
-    const { col, row } = item.position;
+    const { col, row, heightPercentage } = item;
 
     if (col === 0 && panelsColumn1[row]) {
       panelsColumn1[row] = {
         ...panelsColumn1[row],
         item: item,
+        size: heightPercentage,
       };
     } else if (col === 1 && panelsColumn2[row]) {
       panelsColumn2[row] = {
         ...panelsColumn2[row],
         item: item,
+        size: heightPercentage,
       };
     } else {
       console.error(`Panel not found for row ${row}, column ${col}`);
     }
   });
 
+  // find count of empty panels for each column
+  let emptyPanelsOfColumn1 = panelsColumn1.filter(
+    (panel) => !panel.item
+  ).length;
+  let emptyPanelsOfColumn2 = panelsColumn2.filter(
+    (panel) => !panel.item
+  ).length;
+
+  // apply height percentage for empty panels of each column
+  panelsColumn1 = panelsColumn1.map((panel, index) => {
+    if (!panel.item) {
+      const size =
+        emptyPanelsOfColumn1 > 0 ? unusedSizeOfCol1 / emptyPanelsOfColumn1 : 0;
+      console.log(`Panel ${index} is empty, assigning size: ${size}`);
+      return {
+        ...panel,
+        size: size,
+      };
+    }
+    return panel;
+  });
+
+  panelsColumn2 = panelsColumn2.map((panel, index) => {
+    if (!panel.item) {
+      const size =
+        emptyPanelsOfColumn2 > 0 ? unusedSizeOfCol2 / emptyPanelsOfColumn2 : 0;
+      console.log(`Panel ${index} is empty, assigning size: ${size}`);
+      return {
+        ...panel,
+        size: size,
+      };
+    }
+    return panel;
+  });
+
+  // Ensure the total size of each column is equal to 100%
+  const totalSizeCol1 = panelsColumn1.reduce(
+    (acc, panel) => acc + panel.size,
+    0
+  );
+  const totalSizeCol2 = panelsColumn2.reduce(
+    (acc, panel) => acc + panel.size,
+    0
+  );
+
+  if (totalSizeCol1 !== 100) {
+    console.warn(
+      `Column 1 total size is ${totalSizeCol1}%. Adjusting last panel to fit.`
+    );
+    panelsColumn1[panelsColumn1.length - 1].size += 100 - totalSizeCol1;
+  }
+
+  if (totalSizeCol2 !== 100) {
+    console.warn(
+      `Column 2 total size is ${totalSizeCol2}%. Adjusting last panel to fit.`
+    );
+    panelsColumn2[panelsColumn2.length - 1].size += 100 - totalSizeCol2;
+  }
+
+  // return the new canvas
   return {
     id: canvasId,
     panels: [panelsColumn1, panelsColumn2],
   };
 };
-const unflattenArray = (
-  flatArray: Panel[],
-  columnOneLength: number,
-  columnTwoLength: number
-) => {
-  let columnOne: Panel[] = [];
-  let columnTwo: Panel[] = [];
-
-  flatArray.map((item, index) =>
-    index < columnOneLength
-      ? columnOne.push({ ...item, size: Math.round(100 / columnOneLength) })
-      : columnTwo.push({ ...item, size: Math.round(100 / columnTwoLength) })
-  );
-
-  return [columnOne, columnTwo];
-};
-
-const findFirstEmptyPanelOfCanvas = (panels: Panel[][]) => {
-  let emptyPanelId: string | null = null;
-
-  panels.some((column) => {
-    return column.some((panel) => {
-      if (panel.item === null) {
-        emptyPanelId = panel.id;
-        return true;
-      } else {
-        return false;
-      }
-    });
-  });
-
-  return emptyPanelId;
-};
-
-const checkIfItemIsInCanvas = (panels: Panel[][], item: Item) => {
-  const result = panels.some((column) =>
-    column.some((panel) => panel.item && panel.item.id === item.id)
-  );
-  return result;
-};
-
-// Panel interface
-export interface Panel {
-  id: string;
-  size: number;
-  item?: Item | null;
-}
-
-export interface OutfitItem extends Item {
-  position: {
-    col: number;
-    row: number;
-  };
-}
-
-export type Canvas = {
-  id?: string;
-  panels: Panel[][];
-};
 
 // Initial state
 const initialState: Canvas[] = [
-  createNewCanvas(Math.random().toString(16).slice(2)),
-  createNewCanvas(Math.random().toString(16).slice(2)),
+  createNewEmptyCanvas(Math.random().toString(16).slice(2)),
 ];
 
 // action types
-type PanelAction =
+type StateAction =
   | { type: "ADD_ITEM_TO_CANVASES"; item: any }
   | {
       type: "DROP_ITEM";
@@ -160,7 +161,7 @@ type PanelAction =
   | { type: "RESET_CANVAS"; canvasIndx: number };
 
 // Reducer function
-const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
+const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
   const copy = [...state];
   switch (action.type) {
     case "ADD_ITEM_TO_CANVASES":
@@ -193,6 +194,7 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
       });
 
       return copy;
+
     case "DROP_ITEM":
       const droppedId = action.overId.toString().split("_")[0];
       const itemAlreadyDropped = checkIfItemIsInCanvas(
@@ -233,7 +235,7 @@ const stateReducer = (state: Canvas[], action: PanelAction): Canvas[] => {
         panels: copy[action.canvasIndx].panels.map((column) =>
           column.map((panel) =>
             panel.id === action.panelId
-              ? { ...panel, size: Math.round(action.size) }
+              ? { ...panel, size: action.size }
               : panel
           )
         ),
@@ -373,7 +375,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addCanvas = () => {
-    const newCanvas = createNewCanvas(Math.random().toString(16).slice(2));
+    const newCanvas = createNewEmptyCanvas(Math.random().toString(16).slice(2));
     dispatch({ type: "ADD_CANVAS", newCanvas });
   };
 

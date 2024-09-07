@@ -9,14 +9,7 @@ interface Props {
 }
 
 const Canvas: React.FC<Props> = ({ index }) => {
-  const {
-    state,
-    addPanel,
-    deletePanel,
-    removeItemFromPanel,
-    deleteCanvas,
-    resetCanvas,
-  } = useAppState();
+  const { state, deleteCanvas, resetCanvas } = useAppState();
 
   const panels = state[index].panels;
 
@@ -35,22 +28,8 @@ const Canvas: React.FC<Props> = ({ index }) => {
         strategy={rectSwappingStrategy}
       >
         <div className="flex w-[400px]">
-          <CanvasColumn
-            canvasIndex={index}
-            column={0}
-            panels={panels[0]}
-            onAddPanel={addPanel}
-            onDeletePanel={deletePanel}
-            onRemoveItem={removeItemFromPanel}
-          />
-          <CanvasColumn
-            canvasIndex={index}
-            column={1}
-            panels={panels[1]}
-            onAddPanel={addPanel}
-            onDeletePanel={deletePanel}
-            onRemoveItem={removeItemFromPanel}
-          />
+          <CanvasColumn canvasIndex={index} column={0} panels={panels[0]} />
+          <CanvasColumn canvasIndex={index} column={1} panels={panels[1]} />
         </div>
       </SortableContext>
       <button

@@ -11,23 +11,20 @@ import {
   DragOverEvent,
 } from "@dnd-kit/core";
 import DraggableItem from "./DraggableItem";
-import { OutfitItem, useAppState } from "./AppStateContext";
+import { useAppState } from "./AppStateContext";
 
 import { cn } from "../../lib/utils";
 import { arraySwap } from "@dnd-kit/sortable";
 import Canvas from "./canvas/Canvas";
 import { PlusIcon } from "lucide-react";
-
-export interface Item {
-  id: string | number;
-  title: string;
-}
+import { Item, OutfitItem } from "../../lib/types";
 
 const OUTFITS: OutfitItem[] = [
-  { id: "1", title: "Item 1", position: { col: 0, row: 5 } },
-  { id: "2", title: "Item 2", position: { col: 1, row: 0 } },
-  { id: "3", title: "Item 3", position: { col: 0, row: 1 } },
-  { id: "4", title: "Item 4", position: { col: 1, row: 2 } },
+  { id: "3", title: "Item 3", col: 0, row: 1, heightPercentage: 50 },
+  { id: "1", title: "Item 1", col: 0, row: 2, heightPercentage: 20 },
+  { id: "2", title: "Item 2", col: 1, row: 0, heightPercentage: 20 },
+  { id: "5", title: "Item 5", col: 1, row: 1, heightPercentage: 60 },
+  { id: "4", title: "Item 4", col: 1, row: 2, heightPercentage: 20 },
 ];
 
 const ITEMS = Array(25)
