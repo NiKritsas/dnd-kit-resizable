@@ -99,8 +99,6 @@ export function ResizableDemo() {
 
     if (activeCanvasIndx !== undefined && overCanvasIndx !== undefined) {
       if (activeCanvasIndx === overCanvasIndx) {
-        // Same canvas, just swap the items within the same canvas
-        // console.log("Swapped items within the same canvas");
         const swappedArray = arraySwap(
           panels,
           activePanelIndex,
@@ -108,28 +106,14 @@ export function ResizableDemo() {
         );
         swapItemsInPanel(overCanvasIndx, swappedArray);
       } else {
-        // Different canvas
-        // console.log("Moved item to a different canvas");
-
-        // Drop the item into the new panel in the target canvas
         dropItemToPanel(overCanvasIndx, over.id, activeItem);
-
-        // Remove the item from the original canvas panel(not needed)
-        // removeItemFromPanel(activeCanvasIndx, active.id.toString());
       }
     } else {
-      // If the item is coming from a pool (not from any specific panel) and being dropped on a new canvas
-      // console.log("Dropped a pool item into an empty panel");
       dropItemToPanel(overCanvasIndx, over.id, activeItem);
     }
 
     // Clear active item after drag end
     setActiveItem(null);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    // console.log(over);
   };
 
   useEffect(() => {
@@ -140,7 +124,6 @@ export function ResizableDemo() {
     <DndContext
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
       sensors={sensors}
     >
       <div className="flex flex-col space-y-4 p-4">
@@ -166,6 +149,19 @@ export function ResizableDemo() {
           </div>
         </div>
 
+        <div className="flex gap-2 items-center justify-center">
+          {/* Button add a new canvas */}
+          <button className="p-2 rounded-md bg-slate-200" onClick={addCanvas}>
+            Add New Canvas
+          </button>
+          <button
+            className="p-2 rounded-md bg-slate-500 text-white"
+            onClick={addCanvasWithItems}
+          >
+            Add Canvas with Items
+          </button>
+        </div>
+
         <div className="flex flex-wrap gap-4 border p-6 rounded-md bg-slate-100">
           {state.map((canvas, index) => (
             <Canvas key={canvas.id} index={index} />
@@ -189,11 +185,6 @@ export function ResizableDemo() {
           </div>
         )}
       </DragOverlay>
-      <div className="flex-row">
-        {/* Button add a new canvas */}
-        <button onClick={addCanvas}>Add New Canvas</button>
-        <button onClick={addCanvasWithItems}>Add Canvas with Items</button>
-      </div>
     </DndContext>
   );
 }
