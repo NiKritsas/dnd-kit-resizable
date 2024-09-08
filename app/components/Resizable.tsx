@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { PlusIcon } from "lucide-react";
 import {
   DndContext,
   useSensor,
@@ -8,16 +9,13 @@ import {
   DragStartEvent,
   MouseSensor,
   TouchSensor,
-  DragOverEvent,
 } from "@dnd-kit/core";
+import { arraySwap } from "@dnd-kit/sortable";
+import { cn } from "@/lib/utils";
+import { Item, OutfitItem } from "@/lib/types";
 import DraggableItem from "./DraggableItem";
 import { useAppState } from "./AppStateContext";
-
-import { cn } from "../../lib/utils";
-import { arraySwap } from "@dnd-kit/sortable";
 import Canvas from "./canvas/Canvas";
-import { PlusIcon } from "lucide-react";
-import { Item, OutfitItem } from "../../lib/types";
 
 const OUTFITS: OutfitItem[] = [
   { id: "3", title: "Item 3", col: 0, row: 1, heightPercentage: 50 },

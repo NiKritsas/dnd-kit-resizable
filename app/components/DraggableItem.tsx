@@ -1,6 +1,6 @@
 import React from "react";
 import { useDraggable, UniqueIdentifier } from "@dnd-kit/core";
-import { Item } from "./Resizable";
+import { Item } from "@/lib/types";
 
 interface DraggableItemProps {
   id: UniqueIdentifier;

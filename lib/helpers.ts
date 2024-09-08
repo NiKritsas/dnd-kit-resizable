@@ -42,7 +42,11 @@ export const checkIfItemIsInCanvas = (panels: Panel[][], item: Item) => {
 };
 
 // Utility to create a new empty panel with a unique id
-export const createPanel = (id: string, item?: Item, size?: number): Panel => ({
+export const createPanel = (
+  id: string,
+  item?: Item | null,
+  size?: number
+): Panel => ({
   id: id,
   size: size ? size : 50,
   item: item ? item : null,
@@ -54,11 +58,14 @@ export const createNewEmptyCanvas = (canvasId: string): Canvas => {
   return {
     id: id,
     panels: [
-      [createPanel(`panel-1.${id}`), createPanel(`panel-2.${id}`)],
       [
-        createPanel(`panel-3.${id}`),
-        createPanel(`panel-4.${id}`),
-        createPanel(`panel-5.${id}`),
+        createPanel(`panel-1.${id}`, null, 50),
+        createPanel(`panel-2.${id}`, null, 50),
+      ],
+      [
+        createPanel(`panel-3.${id}`, null, 100 / 3),
+        createPanel(`panel-4.${id}`, null, 100 / 3),
+        createPanel(`panel-5.${id}`, null, 100 / 3),
       ],
     ],
   };

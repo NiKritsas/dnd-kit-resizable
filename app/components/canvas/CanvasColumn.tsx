@@ -1,14 +1,9 @@
-import { FC, useState } from "react";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { FC } from "react";
+import { PlusIcon } from "lucide-react";
 import { useAppState } from "../AppStateContext";
-import DroppableArea from "../DroppableArea";
-import { BadgeMinus, PlusIcon } from "lucide-react";
-import SortableItem from "../SortableItem";
-import { Panel } from "../../../lib/types";
+import { ResizablePanelGroup } from "@/components/ui/resizable";
+import { Panel } from "@/lib/types";
+import CanvasPanel from "./CanvasPanel";
 
 interface CanvasColumnProps {
   canvasIndex: number;
@@ -21,8 +16,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
   column,
   panels,
 }) => {
-  const { state, addPanel, handleResize, removeItemFromPanel, deletePanel } =
-    useAppState();
+  const { state, addPanel } = useAppState();
   const handleAddPanel = () => {
     const newPanelId = `${Math.random().toString(16).slice(2)}.${
       state[canvasIndex].id
@@ -33,66 +27,15 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
   return (
     <div className="min-h-[300px] flex flex-col items-center gap-1 flex-1">
       <ResizablePanelGroup direction="vertical" className="min-h-[300px]">
-        {panels.map((panel, index) => {
-          const [size, setSize] = useState(panel.size);
-          return (
-            <ResizablePanel
-              key={panel.id}
-              id={panel.id}
-              order={index}
-              defaultSize={size}
-              onResize={(size) => {
-                setSize(size);
-                handleResize(canvasIndex, panel.id, size);
-              }}
-              className="p-0.5"
-            >
-              <div className="relative h-full">
-                <DroppableArea id={panel.id} canvasIndex={canvasIndex}>
-                  {panel.item ? (
-                    <SortableItem
-                      id={`${panel.id}_${panel.item.id}`}
-                      canvasIndex={canvasIndex}
-                      item={panel.item}
-                    >
-                      <div className="bg-slate-300 text-slate-500 rounded h-full w-full flex items-center justify-center z-20">
-                        {panel.item.title}
-                        <button
-                          className="font-bold pl-2 cursor-pointer"
-                          onClickCapture={() =>
-                            removeItemFromPanel(canvasIndex, panel.id)
-                          }
-                        >
-                          x
-                        </button>
-                      </div>
-                    </SortableItem>
-                  ) : (
-                    <div className="flex h-full items-center justify-center p-4">
-                      <span className="font-semibold">
-                        Panel {column}
-                        {index}
-                      </span>
-                    </div>
-                  )}
-                </DroppableArea>
-
-                {panels.length > 1 && (
-                  <button
-                    onClick={() => deletePanel(canvasIndex, panel.id, column)}
-                    className="absolute top-0 right-0 m-2 bg-red-500 text-white px-2 py-1 rounded text-xs"
-                  >
-                    <BadgeMinus />
-                  </button>
-                )}
-                <div className="absolute bottom-0 right-0 m-2 text-xs text-gray-700">
-                  {Math.round(size)}%
-                </div>
-              </div>
-              {index < panels.length - 1 && <ResizableHandle withHandle />}
-            </ResizablePanel>
-          );
-        })}
+        {panels.map((panel, index) => (
+          <CanvasPanel
+            key={panel.id}
+            panel={panel}
+            panelIndex={index}
+            canvasIndex={canvasIndex}
+            column={column}
+          />
+        ))}
       </ResizablePanelGroup>
       <button
         onClick={handleAddPanel}

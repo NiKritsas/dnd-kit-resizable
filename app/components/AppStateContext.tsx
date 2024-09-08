@@ -313,7 +313,7 @@ interface AppStateContextType {
   ) => void;
   swapItemsInPanel: (canvasIndx: number, flatArray: Panel[]) => void;
   removeItemFromPanel: (canvasIndx: number, id: string) => void;
-  handleResize: (canvasIndx: number, panelId: string, size: number) => void;
+  resizePanel: (canvasIndx: number, panelId: string, size: number) => void;
   addPanel: (canvasIndx: number, column: number, id: string) => void;
   deletePanel: (canvasIndx: number, id: string, column: number) => void;
   addCanvas: () => void;
@@ -358,7 +358,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "SWAP_ITEMS", canvasIndx, flatArray });
   };
 
-  const handleResize = (canvasIndx: number, panelId: string, size: number) => {
+  const resizePanel = (canvasIndx: number, panelId: string, size: number) => {
     dispatch({ type: "RESIZE_PANEL", canvasIndx, panelId, size });
   };
 
@@ -403,7 +403,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         dropItemToPanel,
         swapItemsInPanel,
         removeItemFromPanel,
-        handleResize,
+        resizePanel,
         addPanel,
         deletePanel,
         addCanvas,
