@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { PlusIcon } from "lucide-react";
 import {
   DndContext,
@@ -33,6 +33,10 @@ const ITEMS = Array(25)
   }));
 
 export function ResizableDemo() {
+  const startingNewCanvasId = useId();
+  const [randomNewCanvasId, setRandomNewCanvasId] =
+    useState(startingNewCanvasId);
+
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -52,7 +56,8 @@ export function ResizableDemo() {
   } = useAppState();
 
   const addCanvasWithItems = () => {
-    createCanvasWithItems(OUTFITS);
+    console.log(randomNewCanvasId);
+    createCanvasWithItems(`canvas-${randomNewCanvasId}`, OUTFITS);
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -114,12 +119,17 @@ export function ResizableDemo() {
     setActiveItem(null);
   };
 
+  useEffect(() => {
+    setRandomNewCanvasId(`${startingNewCanvasId}${state.length}`);
+  }, [state.length]);
+
   // useEffect(() => {
   //   console.log(state);
   // }, [state]);
 
   return (
     <DndContext
+      id="visual-builder-dnd"
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       sensors={sensors}
@@ -149,7 +159,10 @@ export function ResizableDemo() {
 
         <div className="flex gap-2 items-center justify-center">
           {/* Button add a new canvas */}
-          <button className="p-2 rounded-md bg-slate-200" onClick={addCanvas}>
+          <button
+            className="p-2 rounded-md bg-slate-200"
+            onClick={() => addCanvas(`${randomNewCanvasId}`)}
+          >
             Add New Canvas
           </button>
           <button

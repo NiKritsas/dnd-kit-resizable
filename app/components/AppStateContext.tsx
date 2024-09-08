@@ -198,8 +198,8 @@ interface AppStateContextType {
   resizePanel: (canvasIndx: number, panelId: string, size: number) => void;
   addPanel: (canvasIndx: number, column: number, id: string) => void;
   deletePanel: (canvasIndx: number, id: string, column: number) => void;
-  addCanvas: () => void;
-  createCanvasWithItems: (items: OutfitItem[]) => void;
+  addCanvas: (id: string) => void;
+  createCanvasWithItems: (id: string, items: OutfitItem[]) => void;
   deleteCanvas: (canvasIndx: number) => void;
   resetCanvas: (canvasIndx: number) => void;
 }
@@ -258,16 +258,13 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "REMOVE_ITEM", canvasIndx, id });
   };
 
-  const addCanvas = () => {
-    const newCanvas = createNewEmptyCanvas(Math.random().toString(16).slice(2));
+  const addCanvas = (id: string) => {
+    const newCanvas = createNewEmptyCanvas(id);
     dispatch({ type: "ADD_CANVAS", newCanvas });
   };
 
-  const createCanvasWithItems = (items: OutfitItem[]) => {
-    const newCanvas = createNewCanvasWithItems(
-      Math.random().toString(16).slice(2),
-      items
-    );
+  const createCanvasWithItems = (id: string, items: OutfitItem[]) => {
+    const newCanvas = createNewCanvasWithItems(id, items);
     dispatch({ type: "CREATE_CANVAS_WITH_ITEMS", newCanvas });
   };
 
