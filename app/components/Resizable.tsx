@@ -114,9 +114,9 @@ export function ResizableDemo() {
     setActiveItem(null);
   };
 
-  useEffect(() => {
-    console.log(state);
-  }, [state]);
+  // useEffect(() => {
+  //   console.log(state);
+  // }, [state]);
 
   return (
     <DndContext

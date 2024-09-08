@@ -4,7 +4,8 @@ import { Panel } from "@/lib/types";
 import { useAppState } from "../AppStateContext";
 import DroppableArea from "../DroppableArea";
 import SortableItem from "../SortableItem";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ImperativePanelHandle } from "react-resizable-panels";
 
 interface CanvasPanelProps {
   panel: Panel;
@@ -23,10 +24,7 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
     useAppState();
   const panels = state[canvasIndex].panels[column];
 
-  const [panelSize, setPanelSize] = useState<number>(panel.size);
-
   const handleResize = (size: number) => {
-    setPanelSize(size);
     resizePanel(canvasIndex, panel.id, size);
   };
 
@@ -35,7 +33,7 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
       key={panel.id}
       id={panel.id}
       order={panelIndex}
-      defaultSize={panelSize}
+      defaultSize={panel.size}
       onResize={handleResize}
       className="p-0.5"
     >
