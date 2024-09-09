@@ -102,12 +102,12 @@ export const createNewCanvasWithItems = (
   let panelsColumn1: Panel[] = Array.from(
     { length: maxRowCol1 + 1 },
     (_, rowIndex) =>
-      createPanel(`panel-${rowIndex}.${canvasId}`, 100 / (maxRowCol1 + 1))
+      createPanel(`panel-${rowIndex}1.${canvasId}`, 100 / (maxRowCol1 + 1))
   );
   let panelsColumn2: Panel[] = Array.from(
     { length: maxRowCol2 + 1 },
     (_, rowIndex) =>
-      createPanel(`panel-${rowIndex}.${canvasId}`, 100 / (maxRowCol2 + 1))
+      createPanel(`panel-${rowIndex}2.${canvasId}`, 100 / (maxRowCol2 + 1))
   );
 
   // map items and add them to their designated panel

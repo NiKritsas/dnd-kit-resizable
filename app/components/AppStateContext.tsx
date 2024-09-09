@@ -128,7 +128,10 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
       const currentColumnPanels = copy[action.canvasIndx].panels[action.column];
       let newTargetColumnPanels = [
         ...currentColumnPanels,
-        createPanel(`panel-${action.id}`, 100 / currentColumnPanels.length),
+        createPanel(
+          `panel-${action.id}.${action.column}`,
+          100 / currentColumnPanels.length
+        ),
       ];
 
       newTargetColumnPanels = resizeColumnPanels(newTargetColumnPanels);
