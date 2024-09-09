@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useId, useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { useAppState } from "../AppStateContext";
 import { ResizablePanelGroup } from "@/components/ui/resizable";
@@ -16,13 +16,19 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
   column,
   panels,
 }) => {
+  const startingNewPanelId = useId();
+  const [randomNewPanelId, setRandomNewPanelId] = useState(startingNewPanelId);
+
   const { state, addPanel } = useAppState();
   const handleAddPanel = () => {
-    const newPanelId = `${Math.random().toString(16).slice(2)}.${
-      state[canvasIndex].id
-    }`;
+    const newPanelId = `${randomNewPanelId}.${state[canvasIndex].id}`;
     addPanel(canvasIndex, column, newPanelId);
   };
+
+  // resets the random new panel id when panels are added or removed to avoid same keys
+  useEffect(() => {
+    setRandomNewPanelId(`${startingNewPanelId}${panels.length}`);
+  }, [panels.length]);
 
   return (
     <div className="min-h-[300px] flex flex-col items-center gap-1 flex-1">

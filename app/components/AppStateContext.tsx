@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useContext, useId, useReducer } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { Canvas, Item, OutfitItem, Panel } from "@/lib/types";
 import {
@@ -10,11 +10,6 @@ import {
   resizeColumnPanels,
   unflattenArray,
 } from "@/lib/helpers";
-
-// Initial state
-const initialState: Canvas[] = [
-  createNewEmptyCanvas(Math.random().toString(16).slice(2)),
-];
 
 // action types
 type StateAction =
@@ -227,6 +222,8 @@ export const useAppState = () => {
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  // Initial state
+  const initialState: Canvas[] = [createNewEmptyCanvas(useId())];
   const [state, dispatch] = useReducer(stateReducer, initialState);
 
   const addItemToCanvases = (item: any) => {
