@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from "react";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, ArrowLeftRight } from "lucide-react";
 import {
   DndContext,
   useSensor,
@@ -17,20 +17,56 @@ import DraggableItem from "./DraggableItem";
 import { useAppState } from "./AppStateContext";
 import Canvas from "./canvas/Canvas";
 
-const OUTFITS: OutfitItem[] = [
-  { id: "3", title: "Item 3", col: 0, row: 1, heightPercentage: 50 },
-  { id: "1", title: "Item 1", col: 0, row: 2, heightPercentage: 20 },
-  { id: "2", title: "Item 2", col: 1, row: 0, heightPercentage: 20 },
-  { id: "5", title: "Item 5", col: 1, row: 1, heightPercentage: 60 },
-  { id: "4", title: "Item 4", col: 1, row: 2, heightPercentage: 20 },
-];
-
 const ITEMS = Array(25)
   .fill(null)
   .map((_, index) => ({
     id: index + 1,
     title: `Item ${index + 1}`,
+    isactive: index % 5 !== 0,
   }));
+
+const OUTFITS: OutfitItem[] = [
+  {
+    id: ITEMS[0].id,
+    title: "Item 1",
+    isactive: ITEMS[0].isactive,
+    col: 0,
+    row: 2,
+    heightPercentage: 20,
+  },
+  {
+    id: ITEMS[1].id,
+    title: "Item 3",
+    isactive: ITEMS[1].isactive,
+    col: 0,
+    row: 1,
+    heightPercentage: 50,
+  },
+  {
+    id: ITEMS[2].id,
+    title: "Item 2",
+    isactive: ITEMS[2].isactive,
+    col: 1,
+    row: 0,
+    heightPercentage: 20,
+  },
+  {
+    id: ITEMS[3].id,
+    title: "Item 5",
+    isactive: ITEMS[3].isactive,
+    col: 1,
+    row: 1,
+    heightPercentage: 60,
+  },
+  {
+    id: ITEMS[4].id,
+    title: "Item 4",
+    isactive: ITEMS[4].isactive,
+    col: 1,
+    row: 2,
+    heightPercentage: 20,
+  },
+];
 
 export function ResizableDemo() {
   const startingNewCanvasId = useId();
@@ -51,6 +87,7 @@ export function ResizableDemo() {
     dropItemToPanel,
     swapItemsInPanel,
     addItemToCanvases,
+    replaceFirstInactiveItem,
     addCanvas,
     createCanvasWithItems,
   } = useAppState();
@@ -161,10 +198,18 @@ export function ResizableDemo() {
                 id={`pool-item-${item.id}`}
                 item={item}
               >
-                <div className="bg-blue-500 text-white p-2 rounded flex  gap-2">
+                <div
+                  className={cn(
+                    " text-white p-2 rounded flex  gap-2",
+                    item.isactive ? "bg-blue-500" : "bg-blue-500/50"
+                  )}
+                >
                   <div className="font-semibold">{item.title}</div>
                   <button onClick={() => addItemToCanvases(item)}>
                     <PlusIcon className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => replaceFirstInactiveItem(item)}>
+                    <ArrowLeftRight className="h-4 w-4" />
                   </button>
                 </div>
               </DraggableItem>

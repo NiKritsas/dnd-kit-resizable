@@ -1,6 +1,7 @@
 export interface Item {
   id: string | number;
   title: string;
+  isactive: boolean;
 }
 
 export interface OutfitItem extends Item {

@@ -26,16 +26,17 @@ type StateAction =
   | { type: "ADD_PANEL"; canvasIndx: number; column: number; id: string }
   | { type: "DELETE_PANEL"; canvasIndx: number; id: string; column: number }
   | { type: "ADD_CANVAS"; newCanvas: Canvas }
-  | { type: "CREATE_CANVAS_WITH_ITEMS"; newCanvas: Canvas } // New action for creating a canvas with items
+  | { type: "CREATE_CANVAS_WITH_ITEMS"; newCanvas: Canvas }
   | { type: "DELETE_CANVAS"; canvasIndx: number }
-  | { type: "RESET_CANVAS"; canvasIndx: number };
+  | { type: "RESET_CANVAS"; canvasIndx: number }
+  | { type: "REPLACE_FIRST_INACTIVE_ITEM"; item: any }; // New Action for replacing the first inactive item
 
 // Reducer function
 const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
   const copy = [...state];
   switch (action.type) {
     case "ADD_ITEM_TO_CANVASES":
-      // find the first empty panel of each canvas
+      // Find the first empty panel of each canvas
       let emptyPanelIds: { canvasIndex: number; panelId: string }[] = [];
       copy.map((canvas, index) => {
         const firstEmptyPanel = findFirstEmptyPanelOfCanvas(canvas.panels);
@@ -43,7 +44,7 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
           emptyPanelIds.push({ canvasIndex: index, panelId: firstEmptyPanel });
       });
 
-      // add the item in all found empty panels
+      // Add the item in all found empty panels
       emptyPanelIds.map((el) => {
         const itemAlreadyDropped = checkIfItemIsInCanvas(
           state[el.canvasIndex].panels,
@@ -65,6 +66,36 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
 
       return copy;
 
+    case "REPLACE_FIRST_INACTIVE_ITEM":
+      copy.forEach((canvas, canvasIndex) => {
+        const itemExistsInCanvas = checkIfItemIsInCanvas(
+          canvas.panels,
+          action.item
+        );
+
+        if (itemExistsInCanvas) {
+          return;
+        }
+
+        let replaced = false;
+        copy[canvasIndex] = {
+          ...canvas,
+          panels: canvas.panels.map((column) =>
+            column.map((panel) => {
+              if (!replaced && panel.item && !panel.item.isactive) {
+                replaced = true;
+                return {
+                  ...panel,
+                  item: action.item,
+                };
+              }
+              return panel;
+            })
+          ),
+        };
+      });
+
+      return copy;
     case "DROP_ITEM":
       const droppedId = action.overId.toString().split("_")[0];
       const itemAlreadyDropped = checkIfItemIsInCanvas(
@@ -95,8 +126,6 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
         state[action.canvasIndx].panels[0].length,
         state[action.canvasIndx].panels[1].length
       );
-
-      console.log(unsizedChangedPanels);
 
       const sizedPanels: Panel[][] = unsizedChangedPanels.map(
         (column, colIndx) =>
@@ -217,6 +246,7 @@ interface AppStateContextType {
   deletePanel: (canvasIndx: number, id: string, column: number) => void;
   addCanvas: (id: string) => void;
   createCanvasWithItems: (id: string, items: OutfitItem[]) => void;
+  replaceFirstInactiveItem: (item: Item) => void; // New function to replace first inactive item
   deleteCanvas: (canvasIndx: number) => void;
   resetCanvas: (canvasIndx: number) => void;
 }
@@ -239,7 +269,6 @@ export const useAppState = () => {
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // Initial state
   const initialState: Canvas[] = [createNewEmptyCanvas(useId())];
   const [state, dispatch] = useReducer(stateReducer, initialState);
 
@@ -257,6 +286,10 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const swapItemsInPanel = (canvasIndx: number, flatArray: Panel[]) => {
     dispatch({ type: "SWAP_ITEMS", canvasIndx, flatArray });
+  };
+
+  const replaceFirstInactiveItem = (item: any) => {
+    dispatch({ type: "REPLACE_FIRST_INACTIVE_ITEM", item });
   };
 
   const resizePanel = (canvasIndx: number, panelId: string, size: number) => {
@@ -300,6 +333,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         addItemToCanvases,
         dropItemToPanel,
         swapItemsInPanel,
+        replaceFirstInactiveItem, // Added here
         removeItemFromPanel,
         resizePanel,
         addPanel,

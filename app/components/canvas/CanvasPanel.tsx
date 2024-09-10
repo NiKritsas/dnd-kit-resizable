@@ -4,6 +4,7 @@ import { Panel } from "@/lib/types";
 import { useAppState } from "../AppStateContext";
 import DroppableArea from "../DroppableArea";
 import SortableItem from "../SortableItem";
+import { cn } from "@/lib/utils";
 
 interface CanvasPanelProps {
   panel: Panel;
@@ -43,7 +44,12 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
               canvasIndex={canvasIndex}
               item={panel.item}
             >
-              <div className="bg-slate-300 text-slate-500 rounded h-full w-full flex items-center justify-center z-20">
+              <div
+                className={cn(
+                  "text-slate-500 rounded h-full w-full flex items-center justify-center z-20",
+                  panel.item.isactive ? "bg-slate-300" : "bg-slate-300/50"
+                )}
+              >
                 {panel.item.title}
                 <button
                   className="font-bold pl-2 cursor-pointer"
