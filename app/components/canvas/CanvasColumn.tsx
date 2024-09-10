@@ -20,6 +20,7 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
   const [randomNewPanelId, setRandomNewPanelId] = useState(startingNewPanelId);
 
   const { state, addPanel } = useAppState();
+
   const handleAddPanel = () => {
     const newPanelId = `${randomNewPanelId}.${state[canvasIndex].id}`;
     addPanel(canvasIndex, column, newPanelId);
@@ -27,8 +28,10 @@ const CanvasColumn: FC<CanvasColumnProps> = ({
 
   // resets the random new panel id when panels are added or removed to avoid same keys
   useEffect(() => {
-    setRandomNewPanelId(`${startingNewPanelId}${panels.length}`);
-  }, [panels.length]);
+    setRandomNewPanelId(
+      `${Math.random().toString(16).slice(2)}${panels.length}`
+    );
+  }, [panels]);
 
   return (
     <div className="min-h-[300px] flex flex-col items-center gap-1 flex-1">

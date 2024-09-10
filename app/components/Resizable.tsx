@@ -56,7 +56,6 @@ export function ResizableDemo() {
   } = useAppState();
 
   const addCanvasWithItems = () => {
-    console.log(randomNewCanvasId);
     createCanvasWithItems(`canvas-${randomNewCanvasId}`, OUTFITS);
   };
 
@@ -83,8 +82,8 @@ export function ResizableDemo() {
     const activeCanvasIndx = active.data.current?.canvasIndex as number;
 
     // Get the panel data for the "over" canvas
-    const panels = state[overCanvasIndx].panels.flatMap((column) =>
-      column.map((panel) => panel)
+    const panels = state[overCanvasIndx].panels.flatMap((column, colIndx) =>
+      column.map((panel, rowIndx) => ({ ...panel, col: colIndx, row: rowIndx }))
     );
 
     // Find active and over panel indices
@@ -120,12 +119,14 @@ export function ResizableDemo() {
   };
 
   useEffect(() => {
-    setRandomNewCanvasId(`${startingNewCanvasId}${state.length}`);
+    setRandomNewCanvasId(
+      `${Math.random().toString(16).slice(2)}${state.length}`
+    );
   }, [state.length]);
 
-  // useEffect(() => {
-  //   console.log(state);
-  // }, [state]);
+  useEffect(() => {
+    console.log(state);
+  }, [state]);
 
   return (
     <DndContext

@@ -78,9 +78,11 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
 
       copy[action.canvasIndx] = {
         ...copy[action.canvasIndx],
-        panels: copy[action.canvasIndx].panels.map((column) =>
-          column.map((panel) =>
-            panel.id === droppedId ? { ...panel, item: action.item } : panel
+        panels: copy[action.canvasIndx].panels.map((column, colIndx) =>
+          column.map((panel, rowIndx) =>
+            panel.id === droppedId
+              ? { ...panel, item: action.item, col: colIndx, row: rowIndx }
+              : { ...panel, col: colIndx, row: rowIndx }
           )
         ),
       };
@@ -88,15 +90,36 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
       return copy;
 
     case "SWAP_ITEMS":
-      const newPanels = unflattenArray(
+      const unsizedChangedPanels: Panel[][] = unflattenArray(
         action.flatArray,
         state[action.canvasIndx].panels[0].length,
         state[action.canvasIndx].panels[1].length
       );
+
+      console.log(unsizedChangedPanels);
+
+      const sizedPanels: Panel[][] = unsizedChangedPanels.map(
+        (column, colIndx) =>
+          column.map((row, rowIndx) =>
+            column[colIndx].col !== colIndx || column[colIndx].row !== rowIndx
+              ? {
+                  ...row,
+                  col: colIndx,
+                  row: rowIndx,
+                  size: state[action.canvasIndx].panels[colIndx][rowIndx].size,
+                }
+              : {
+                  ...row,
+                  size: state[action.canvasIndx].panels[colIndx][rowIndx].size,
+                }
+          )
+      );
+
       copy[action.canvasIndx] = {
         ...copy[action.canvasIndx],
-        panels: newPanels,
+        panels: sizedPanels,
       };
+
       return copy;
 
     case "REMOVE_ITEM":
@@ -130,7 +153,9 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
         ...currentColumnPanels,
         createPanel(
           `panel-${action.id}.${action.column}`,
-          100 / currentColumnPanels.length
+          100 / currentColumnPanels.length,
+          action.column,
+          currentColumnPanels.length
         ),
       ];
 

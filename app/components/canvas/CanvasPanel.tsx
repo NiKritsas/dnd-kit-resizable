@@ -4,8 +4,6 @@ import { Panel } from "@/lib/types";
 import { useAppState } from "../AppStateContext";
 import DroppableArea from "../DroppableArea";
 import SortableItem from "../SortableItem";
-import { useEffect, useRef, useState } from "react";
-import { ImperativePanelHandle } from "react-resizable-panels";
 
 interface CanvasPanelProps {
   panel: Panel;
@@ -44,6 +42,7 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
               id={`${panel.id}_${panel.item.id}`}
               canvasIndex={canvasIndex}
               item={panel.item}
+              panelPosition={{ col: panel.col, row: panel.row }}
             >
               <div className="bg-slate-300 text-slate-500 rounded h-full w-full flex items-center justify-center z-20">
                 {panel.item.title}

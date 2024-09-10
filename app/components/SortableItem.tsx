@@ -1,13 +1,15 @@
 import React from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { Item } from "./Resizable";
+
 import { useSortable } from "@dnd-kit/sortable";
+import { Item } from "../../lib/types";
 
 interface SortableItemProps {
   id: UniqueIdentifier;
   item: Item;
   canvasIndex: number;
+  panelPosition: { col: number; row: number };
   children: React.ReactNode;
 }
 
