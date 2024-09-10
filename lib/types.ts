@@ -13,8 +13,6 @@ export interface Panel {
   id: string;
   size: number;
   item?: Item | null;
-  col: number;
-  row: number;
 }
 
 export interface Canvas {

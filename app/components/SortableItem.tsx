@@ -9,7 +9,6 @@ interface SortableItemProps {
   id: UniqueIdentifier;
   item: Item;
   canvasIndex: number;
-  panelPosition: { col: number; row: number };
   children: React.ReactNode;
 }
 

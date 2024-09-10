@@ -82,8 +82,8 @@ export function ResizableDemo() {
     const activeCanvasIndx = active.data.current?.canvasIndex as number;
 
     // Get the panel data for the "over" canvas
-    const panels = state[overCanvasIndx].panels.flatMap((column, colIndx) =>
-      column.map((panel, rowIndx) => ({ ...panel, col: colIndx, row: rowIndx }))
+    const panels = state[overCanvasIndx].panels.flatMap((column) =>
+      column.map((panel) => panel)
     );
 
     // Find active and over panel indices
@@ -106,6 +106,20 @@ export function ResizableDemo() {
           activePanelIndex,
           overPanelIndex
         );
+        // const swappedArray = panels.map((panel, index) => {
+        //   if (index === activePanelIndex) {
+        //     return {
+        //       ...panel,
+        //       item: panels[overPanelIndex].item,
+        //     };
+        //   } else if (index === overPanelIndex) {
+        //     return {
+        //       ...panel,
+        //       item: panels[activePanelIndex].item,
+        //     };
+        //   }
+        //   return panel;
+        // });
         swapItemsInPanel(overCanvasIndx, swappedArray);
       } else {
         dropItemToPanel(overCanvasIndx, over.id, activeItem);

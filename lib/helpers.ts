@@ -45,14 +45,10 @@ export const checkIfItemIsInCanvas = (panels: Panel[][], item: Item) => {
 export const createPanel = (
   id: string,
   size: number,
-  col: number,
-  row: number,
   item?: Item | null
 ): Panel => ({
   id: id,
   size: size,
-  col: col,
-  row: row,
   item: item ? item : null,
 });
 
@@ -62,14 +58,11 @@ export const createNewEmptyCanvas = (canvasId: string): Canvas => {
   return {
     id: id,
     panels: [
+      [createPanel(`panel-1.${id}`, 50), createPanel(`panel-2.${id}`, 50)],
       [
-        createPanel(`panel-1.${id}`, 50, 0, 0),
-        createPanel(`panel-2.${id}`, 50, 0, 1),
-      ],
-      [
-        createPanel(`panel-3.${id}`, 100 / 3, 0, 0),
-        createPanel(`panel-4.${id}`, 100 / 3, 0, 1),
-        createPanel(`panel-5.${id}`, 100 / 3, 0, 2),
+        createPanel(`panel-3.${id}`, 100 / 3),
+        createPanel(`panel-4.${id}`, 100 / 3),
+        createPanel(`panel-5.${id}`, 100 / 3),
       ],
     ],
   };
@@ -109,22 +102,12 @@ export const createNewCanvasWithItems = (
   let panelsColumn1: Panel[] = Array.from(
     { length: maxRowCol1 + 1 },
     (_, rowIndex) =>
-      createPanel(
-        `panel-${rowIndex}1.${canvasId}`,
-        100 / (maxRowCol1 + 1),
-        0,
-        rowIndex
-      )
+      createPanel(`panel-${rowIndex}1.${canvasId}`, 100 / (maxRowCol1 + 1))
   );
   let panelsColumn2: Panel[] = Array.from(
     { length: maxRowCol2 + 1 },
     (_, rowIndex) =>
-      createPanel(
-        `panel-${rowIndex}2.${canvasId}`,
-        100 / (maxRowCol2 + 1),
-        1,
-        rowIndex
-      )
+      createPanel(`panel-${rowIndex}2.${canvasId}`, 100 / (maxRowCol2 + 1))
   );
 
   // map items and add them to their designated panel

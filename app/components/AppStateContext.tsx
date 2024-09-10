@@ -81,8 +81,8 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
         panels: copy[action.canvasIndx].panels.map((column, colIndx) =>
           column.map((panel, rowIndx) =>
             panel.id === droppedId
-              ? { ...panel, item: action.item, col: colIndx, row: rowIndx }
-              : { ...panel, col: colIndx, row: rowIndx }
+              ? { ...panel, item: action.item }
+              : { ...panel }
           )
         ),
       };
@@ -100,19 +100,10 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
 
       const sizedPanels: Panel[][] = unsizedChangedPanels.map(
         (column, colIndx) =>
-          column.map((row, rowIndx) =>
-            column[colIndx].col !== colIndx || column[colIndx].row !== rowIndx
-              ? {
-                  ...row,
-                  col: colIndx,
-                  row: rowIndx,
-                  size: state[action.canvasIndx].panels[colIndx][rowIndx].size,
-                }
-              : {
-                  ...row,
-                  size: state[action.canvasIndx].panels[colIndx][rowIndx].size,
-                }
-          )
+          column.map((panel, rowIndx) => ({
+            ...panel,
+            size: state[action.canvasIndx].panels[colIndx][rowIndx].size,
+          }))
       );
 
       copy[action.canvasIndx] = {
@@ -153,9 +144,7 @@ const stateReducer = (state: Canvas[], action: StateAction): Canvas[] => {
         ...currentColumnPanels,
         createPanel(
           `panel-${action.id}.${action.column}`,
-          100 / currentColumnPanels.length,
-          action.column,
-          currentColumnPanels.length
+          100 / currentColumnPanels.length
         ),
       ];
 
