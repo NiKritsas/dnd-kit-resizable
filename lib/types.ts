@@ -20,3 +20,17 @@ export interface Canvas {
   id?: string;
   panels: Panel[][];
 }
+
+export interface SlotItem {
+  item: Item | null;
+  slot: {
+    col: number | null;
+    row: number | null;
+    height: number | null;
+  };
+}
+
+export interface Outfit {
+  outfitId: number;
+  items: SlotItem[][];
+}

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAppState } from "../AppStateContext";
 import CanvasColumn from "./CanvasColumn";
 import { rectSwappingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { RefreshCwIcon, XIcon } from "lucide-react";
+import { RefreshCwIcon, XIcon, EyeIcon } from "lucide-react";
+import { PreviewModal } from "../preview/CanvasPreview";
 
 interface Props {
   index: number;
@@ -10,10 +11,10 @@ interface Props {
 
 const Canvas: React.FC<Props> = ({ index }) => {
   const { state, deleteCanvas, resetCanvas } = useAppState();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const panels = state[index].panels;
 
-  // Utility function to check if the canvas has any items
   const hasItems = panels.some((column) =>
     column.some((panel) => panel.item !== null)
   );
@@ -49,6 +50,17 @@ const Canvas: React.FC<Props> = ({ index }) => {
       >
         <RefreshCwIcon className="h-5 w-5" />
       </button>
+      {/* Preview button */}
+      <button
+        onClick={() => setIsPreviewOpen(true)}
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-green-600 transition"
+      >
+        <EyeIcon className="h-5 w-5" />
+      </button>
+      {/* Render the preview modal if open */}
+      {isPreviewOpen && (
+        <PreviewModal index={index} onClose={() => setIsPreviewOpen(false)} />
+      )}
     </div>
   );
 };

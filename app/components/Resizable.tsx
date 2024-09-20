@@ -17,7 +17,7 @@ import DraggableItem from "./DraggableItem";
 import { useAppState } from "./AppStateContext";
 import Canvas from "./canvas/Canvas";
 
-const ITEMS = Array(25)
+export const ITEMS = Array(25)
   .fill(null)
   .map((_, index) => ({
     id: index + 1,
